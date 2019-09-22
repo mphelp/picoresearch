@@ -34,20 +34,42 @@ end
 
 -- 3, 2, 1
 curs = {
-	x = 2,
-	y = 2,
+	sx = 16,
+	sy = 16,
+	mx = 2,
+	my = 2,
+	mode = 3,
+	col = 4
 }
 draw_curs = function()
-	spr(80, 8*curs.x, 8*curs.y)
+	if (curs.mode == 1) then
+		spr(80, curs.sx, curs.sy)
+	elseif (curs.mode == 3) then
+		spr(96, curs.sx, curs.sy)
+		rectfill(curs.sx-9, curs.sy-9, curs.sx-9, curs.sy+16, curs.col)
+		rectfill(curs.sx-9, curs.sy-9, curs.sx+16, curs.sy-9, curs.col)
+		rectfill(curs.sx+16, curs.sy+16, curs.sx+16, curs.sy-9, curs.col)
+		rectfill(curs.sx+16, curs.sy+16, curs.sx-9, curs.sy+16, curs.col)
+	end
+
 end
-threeByThree = function(x,y)
+threebythree = function(x,y)
 	-- get pipes from map x and y
 end
-twoByTwo = function()
+twobytwo = function()
 
 end
-oneByOne = function()
+onebyone = function()
 
+end
+
+add_pipes = function()
+	if (curs.mode == 3) then
+		for i = curs.mx - 1, curs.mx + 1 do
+			for j = curs.my - 1, curs.my + 1 do
+			end 
+		end
+	end
 end
 
 -- world to screen space project
@@ -58,25 +80,24 @@ function project(x,y,z,cx,cy)
 end
 
 local world_radius=8
-local far_plane=24
-local actors={}
-function make_plyr()
-	return add(actors,{
+local pipes={}
+function make_pipe(mx,my)
+	n = mget(mx,my) -- sprite n
+	return add(pipes,{
  	x=0,y=0,z=0,
-	cx = 64 + 8 , -- center x 
-	cy = 64 + 8 , -- center y
+	cx = mx,
+	cy = my,
  	angle=0,
- 	da=0,
  	-- sprite coords
- 	sx=80,
- 	sy=0,
- 	draw=draw_actor,
+ 	sx=shl(band(n, 0x0f), 3), -- sx <- map x
+ 	sy=shr(band(n, 0xf0), 1),
+ 	draw=draw_pipe,
  	update=function() 
  	 -- done in control_plyr
  	end})
 end
 
-function draw_actor(self)
+function draw_pipe(self)
 	-- rotate sprite (using sprite 32/16 as buffer)
 	rspr(self.sx,self.sy,32,16,-self.angle,1)	
 	
@@ -103,22 +124,33 @@ function draw_actor(self)
 	rectfill(self.cx,self.cy,self.cx,self.cy, 15)
 end
 
-function control_plyr()
+function move_cursor()
 	-- Old Key bindings
 	--if(btnp(0)) plyr.angle -= 0.25
 	--if(btnp(1)) plyr.angle += 0.25
 	--if(btn(4)) plyr.z += 0.01
 	--if(btn(5)) plyr.z -= 0.01
-
-	if(btnp(0)) curs.x -= 1
-	if(btnp(1)) curs.x += 1
-	if(btnp(2)) curs.y -= 1
-	if(btnp(3)) curs.y += 1
+	if(btnp(0)) then 
+		curs.sx -= 8
+		curs.mx -= 1
+	end
+	if(btnp(1)) then 
+		curs.sx += 8
+		curs.mx += 1
+	end
+	if(btnp(2)) then 
+		curs.sy -= 8
+		curs.my -= 1
+	end
+	if(btnp(3)) then 
+		curs.sy += 8
+		curs.my += 1
+	end
 	--plyr.angle+=plyr.da
 	--plyr.da*=0.9
 	
-	local x,y=world_radius*cos(plyr.angle),-world_radius*sin(plyr.angle)
-	plyr.x,plyr.y=x,y
+	--local x,y=world_radius*cos(pipe.angle),-world_radius*sin(pipe.angle)
+	--plyr.x,plyr.y=x,y
 
 	--if btnp(4) then
 	--	make_part(x,y,plyr.angle+0.5)
@@ -126,50 +158,28 @@ function control_plyr()
 
 end
 
-local parts={}
-function make_part(x,y,a)
-	local c,s=3*cos(a),-3*sin(a)
-	add(parts,{
-		x=x,y=y,z=0,
-		dx=c,dy=s,
-		t=time_t+30+rnd(16)
-	})
-end
-
-function update_parts()
-	for _,p in pairs(parts) do
-		if p.t<time_t or p.z>far_plane then
-			del(parts,p)
-		else
-			p.z+=0.5
-		end
-	end	
-end
-
 function _update60()
-
-
-	control_plyr()
-	
-	for _,a in pairs(actors) do
+	move_cursor()
+	add_pipes()
+	for _,a in pairs(pipes) do
 		a:update()
 	end
 	
-	update_parts()
 end
 
 function _draw()
 	cls(0)
 
-	map(0,0,0,0,64,64)	
-	threeByThree(20,20)
 
+	map(0,0,0,0,64,64)	
+	threebythree(20,20)
+	
 	palt(0,false)
 	palt(14,true)
 
 	--map(0,0,0,0,64,64)
 
-	for _,a in pairs(actors) do
+	for _,a in pairs(pipes) do
 		a:draw()
 	end
 	
@@ -180,7 +190,7 @@ function _draw()
 end
 
 function _init()
-	plyr=make_plyr()
+	--plyr=make_plyr()
 	--for i=1,5 do
 	--	make_npc()
 	--end
@@ -235,6 +245,13 @@ __gfx__
 80000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 80000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 88888888000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+08000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00800800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+00800800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+08000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __label__
 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
