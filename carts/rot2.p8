@@ -63,8 +63,8 @@ local actors={}
 function make_plyr()
 	return add(actors,{
  	x=0,y=0,z=0,
-	cx = 64 + 8 , -- center x 
-	cy = 64 + 8 , -- center y
+	cx = 64 + 0 , -- center x 
+	cy = 64 + 0 , -- center y
  	angle=0,
  	da=0,
  	-- sprite coords
@@ -105,15 +105,15 @@ end
 
 function control_plyr()
 	-- Old Key bindings
-	--if(btnp(0)) plyr.angle -= 0.25
-	--if(btnp(1)) plyr.angle += 0.25
-	--if(btn(4)) plyr.z += 0.01
-	--if(btn(5)) plyr.z -= 0.01
+	if(btnp(0)) plyr.angle -= 0.25
+	if(btnp(1)) plyr.angle += 0.25
+	if(btn(4)) plyr.z += 0.01
+	if(btn(5)) plyr.z -= 0.01
 
-	if(btnp(0)) curs.x -= 1
-	if(btnp(1)) curs.x += 1
-	if(btnp(2)) curs.y -= 1
-	if(btnp(3)) curs.y += 1
+	--if(btnp(0)) curs.x -= 1
+	--if(btnp(1)) curs.x += 1
+	--if(btnp(2)) curs.y -= 1
+	--if(btnp(3)) curs.y += 1
 	--plyr.angle+=plyr.da
 	--plyr.da*=0.9
 	
