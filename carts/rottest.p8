@@ -67,6 +67,7 @@ add_pipes = function()
 	if (curs.mode == 3) then
 		for i = curs.mx - 1, curs.mx + 1 do
 			for j = curs.my - 1, curs.my + 1 do
+				if (i >= 0 and j >= 0) make_pipe(i,j)
 			end 
 		end
 	end
@@ -82,22 +83,28 @@ end
 local world_radius=8
 local pipes={}
 function make_pipe(mx,my)
-	n = mget(mx,my) -- sprite n
 	return add(pipes,{
+	n = mget(mx,my), -- sprite n
  	x=0,y=0,z=0,
-	cx = mx,
-	cy = my,
+	cx = 8*mx + 0,
+	cy = 8*my + 0,
  	angle=0,
  	-- sprite coords
- 	sx=shl(band(n, 0x0f), 3), -- sx <- map x
- 	sy=shr(band(n, 0xf0), 1),
+ 	sx=shl(band(mget(mx,my), 0x0f), 3), -- sprite x 
+ 	sy=shr(band(mget(mx,my), 0xf0), 1), -- sprite y
  	draw=draw_pipe,
  	update=function() 
  	 -- done in control_plyr
  	end})
 end
+delete_pipes = function()
+	for p in all(pipes) do 
+		del(pipes, p)
+	end
+end
 
 function draw_pipe(self)
+	--print(self.n)
 	-- rotate sprite (using sprite 32/16 as buffer)
 	rspr(self.sx,self.sy,32,16,-self.angle,1)	
 	
@@ -122,6 +129,12 @@ function draw_pipe(self)
 	--spr(10,52,68)
 	--spr(11,60,60)
 	rectfill(self.cx,self.cy,self.cx,self.cy, 15)
+end
+update_pipes = function()
+	for pipe in all(pipes) do
+		local x,y=world_radius*cos(pipe.angle),-world_radius*sin(pipe.angle)
+		pipe.x,pipe.y=x,y
+	end
 end
 
 function move_cursor()
@@ -149,8 +162,6 @@ function move_cursor()
 	--plyr.angle+=plyr.da
 	--plyr.da*=0.9
 	
-	--local x,y=world_radius*cos(pipe.angle),-world_radius*sin(pipe.angle)
-	--plyr.x,plyr.y=x,y
 
 	--if btnp(4) then
 	--	make_part(x,y,plyr.angle+0.5)
@@ -159,11 +170,13 @@ function move_cursor()
 end
 
 function _update60()
+	delete_pipes() -- from previous
 	move_cursor()
 	add_pipes()
-	for _,a in pairs(pipes) do
-		a:update()
-	end
+	update_pipes()
+	--for _,a in pairs(pipes) do
+	--	a:update()
+	--end
 	
 end
 
@@ -187,6 +200,10 @@ function _draw()
 
 	-- Cursor
 	draw_curs()
+	print(#pipes, 0,0,3)
+	if (#pipes > 0) then 
+		print(#pipes)
+	end
 end
 
 function _init()
