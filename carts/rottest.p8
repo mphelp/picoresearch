@@ -62,7 +62,14 @@ end
 onebyone = function()
 
 end
-
+function samepipes(p1, p2)
+	--for _,v in pairs(p1) do 
+	--	if (p2.x != v.x or p2.y != v.y) then
+	--		return false
+	--	end
+	--end
+	return false
+end
 add_pipes = function()
 	if (curs.mode == 3) then
 		for i = curs.mx - 1, curs.mx + 1 do
@@ -70,6 +77,9 @@ add_pipes = function()
 				if (i >= 0 and j >= 0) make_pipe(i,j)
 			end 
 		end
+		--if samepipes(pipes, new_pipes) then
+		--	pipes = new_pipes -- from make pipe
+		--end
 	end
 end
 
@@ -83,7 +93,7 @@ end
 local world_radius=8
 local pipes={}
 function make_pipe(mx,my)
-	return add(pipes,{
+	return add(new_pipes,{
 	n = mget(mx,my), -- sprite n
  	x=0,y=0,z=0,
 	cx = 8*mx + 0,
@@ -134,6 +144,13 @@ update_pipes = function()
 	for pipe in all(pipes) do
 		local x,y=world_radius*cos(pipe.angle),-world_radius*sin(pipe.angle)
 		pipe.x,pipe.y=x,y
+
+		if (btnp(4)) then
+			pipe.z += .01
+		end
+		if (btnp(5)) then
+			pipe.z -= 0.01
+		end
 	end
 end
 
@@ -173,6 +190,10 @@ function _update60()
 	delete_pipes() -- from previous
 	move_cursor()
 	add_pipes()
+	if (not samepipes(new_pipes, pipes)) then
+		delete_pipes()
+		pipes = new_pipes
+	end
 	update_pipes()
 	--for _,a in pairs(pipes) do
 	--	a:update()
