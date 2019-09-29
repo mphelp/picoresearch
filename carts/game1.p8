@@ -139,11 +139,7 @@ draw_hammer = function()
 end
 draw_curs = function()
     spr(gsprites.curs, curs.sx+(curs.mode-1)*4, curs.sy+(curs.mode-1)*4)
-	if (curs.mode == 1) then
-		--spr(gsprites.curs, curs.sx, curs.sy)
-	elseif (curs.mode == 3) then
-        draw_curs_box(1, 24)
-	end
+    draw_curs_box(1,8*curs.mode)
 end
 draw_curs_box = function(n1, n2)
     rectfill(curs.sx-n1, curs.sy-n1, curs.sx-n1, curs.sy+n2, curs.col)
@@ -187,7 +183,7 @@ curs = {
 	by = 2,
     mapx = 0, -- map block position of cursor
     mapy = 0, 
-	mode = 3,
+	mode = 2, -- mode x mode grid
 	col = 8,
     zoomInDone = false,
     zoomOutDone = false,
@@ -247,13 +243,13 @@ begin_zoom = function()
             local sprn = mget(i + curs.mapx, j+curs.mapy)
             local sprx = 8 * (sprn % 16)
             local spry = 8 * flr(sprn / 16)
-            --local sprx = shl(band(sprn, 0x0f, 3))
-            --local spry = shr(band(sprn, 0xf0, 1))
-            for u = 0, 7 do
-                for v = 0, 7 do
-                    local c = sget(sprx+u, spry+v)
-                    debug_str = debug_str .. c .. ","
-                    sset(buffer['spx']+u+i*8, buffer['spy']+v+j*8, c)
+            if (sprn != 0) then
+                for u = 0, 7 do
+                    for v = 0, 7 do
+                        local c = sget(sprx+u, spry+v)
+                        debug_str = debug_str .. c .. ","
+                        sset(buffer.spx+u+i*8, buffer.spy+v+j*8, c)
+                    end
                 end
             end
         end
