@@ -13,7 +13,14 @@ __lua__
 --    cheddar. and now they've
 --    come through the pipes. 
 
+-- gstate: move, curs, zoomin, zoomed, rotate, zoomout
 local gstate, glevel
+
+-- macros
+bnmap = {x=5, z=4, l=0, r=1, u=2, d=3 }
+bn = function(button) return btn(bnmap[button]) end
+bnp = function(button) return btnp(bnmap[button]) end
+
 function _init()
     gstate = "title"
 end
@@ -21,6 +28,7 @@ end
 handle_state_transitions = function()
     title_check()
     hammer_check()
+    zoom_check()
 end
 handle_level_transitions = function()
    -- nothing yet 
@@ -30,6 +38,14 @@ function _update()
     handle_level_transitions()
     if (gstate == "curs") then
         move_cursor()
+    elseif (gstate == "zoomin") then 
+        zoom_in_animate()
+    elseif (gstate == "zoomed") then    
+        keep_zoomed()
+    elseif (gstate == "zoomout") then
+        zoom_out_animate()
+    elseif (gstate == "rotate") then
+        rotate_animate()
     elseif (gstate == "move") then
         move_player()
 
@@ -47,8 +63,11 @@ function _draw()
         draw_hammer()
         draw_player()
         draw_border()
-        if (gstate == "curs") then
+        if (gstate != "move") then
             draw_curs()
+            print(curs.sx)
+            print(curs.sy)
+            print(gstate)
         end
 
         --map(17, 0, 25, 7, 7, 7) -- celx, cely, sx, sy, celw, celh, [layer]
@@ -161,10 +180,15 @@ curs = {
 	bx = 2, -- block
 	by = 2,
 	mode = 3,
-	col = 8
+	col = 8,
+    zoomInDone = false,
+    zoomOutDone = false,
+    rotateDone = false
 }
 -->8
 -- page 4 (updating)
+
+-- State transitions:
 title_check = function()
     if (gstate == "title") then
         if (btn(4) or btn(5)) then
@@ -181,6 +205,41 @@ hammer_check = function()
             gstate = "curs"
         end
     end
+end
+zoom_check = function()
+    if (gstate == "curs" and bnp('z')) then
+        gstate = "zoomin"
+    elseif (gstate == "zoomin" and curs.zoomInDone) then
+        gstate = "zoomed"
+    elseif (gstate == "zoomed" and (bnp('r') or bnp('l'))) then
+        gstate = "rotate"
+    elseif (gstate == "rotate" and curs.rotateDone) then
+        gstate = "zoomed"
+    elseif (gstate == "zoomed" and bnp('z')) then
+        gstate = "zoomout"
+    elseif (gstate == "zoomout" and curs.zoomOutDone) then
+        gstate = "curs"
+    end
+end
+--rotate_check = function()
+--    if (gstate == "curs" and btnp(4)) then
+--        gstate = "zoom"
+--    elseif (gstate == "zoom" and btnp())
+
+-- Animation + movement
+zoom_in_animate = function()
+    curs.zoomInDone = true
+end
+keep_zoomed = function() 
+    curs.zoomInDone = false
+    curs.zoomOutDone = false
+    curs.rotateDone = false
+end
+zoom_out_animate = function()
+    curs.zoomOutDone = true
+end
+rotate_animate = function()
+    curs.rotateDone = true
 end
 move_cursor = function()
 	if(btnp(0)) then 
