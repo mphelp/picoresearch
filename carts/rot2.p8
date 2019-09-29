@@ -51,13 +51,13 @@ oneByOne = function()
 end
 
 -- world to screen space project
-local cam_focal=1/8
+local cam_focal=1/2
 function project(x,y,z,cx,cy)
 	local w=cam_focal/(cam_focal+z)
  return cx+x*w,cy-y*w,z,w
 end
 
-local world_radius=8
+local world_radius=0 -- 0 for 1x1, 8
 local far_plane=24
 local actors={}
 function make_plyr()
@@ -75,11 +75,11 @@ function make_plyr()
  	 -- done in control_plyr
  	end})
 end
-
 function draw_actor(self)
 	-- rotate sprite (using sprite 32/16 as buffer)
-	rspr(self.sx,self.sy,32,16,-self.angle,1)	
-	
+
+	-- width 1 for 1x1, 2 for 2x2, 3 for 3x3
+	rspr(self.sx,self.sy,32,16,-self.angle,2)	
 	-- project
 	--print(self.cx)
 	--print(self.cy)
@@ -91,7 +91,14 @@ function draw_actor(self)
 	--local x,y,w = self.cx, self.cy, self.z
 	
 	-- display sprite (inc. scaling)
- 	sspr(32,16,16,16,x-4*w,y-4*w,16*w,16*w)	
+ 	--sspr(32,16,16,16,x-4*w,y-4*w,16*w,16*w)	
+
+	-- 1x1
+	--sspr(32,16,16,16,x-4*w,y-4*w,16*w,16*w)
+	-- 2x2
+ 	sspr(32,16,16,16,x-8*w,y-8*w,16*w,16*w)	
+	-- 3x3
+	--sspr(32,16,16,16,x-12*w,y-12*w,16*w,16*w)
 
     -- unrotate sprite
 	--rspr(self.sx,self.sy,32,16,0,1)	
@@ -116,9 +123,10 @@ function control_plyr()
 	--if(btnp(3)) curs.y += 1
 	--plyr.angle+=plyr.da
 	--plyr.da*=0.9
-	
-	local x,y=world_radius*cos(plyr.angle),-world_radius*sin(plyr.angle)
-	plyr.x,plyr.y=x,y
+
+	-- No world radius needed!!	
+	--local x,y=world_radius*cos(plyr.angle),-world_radius*sin(plyr.angle)
+	plyr.x,plyr.y=0,0
 
 	--if btnp(4) then
 	--	make_part(x,y,plyr.angle+0.5)
