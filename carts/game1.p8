@@ -193,7 +193,8 @@ curs = {
     animtimer = 0,
     z = 0, -- zoom level
     cx = nil, -- center of zoom/rot
-    cy = nil
+    cy = nil,
+    angle = 0
 }
 buffer = {spx = 5*8, spy = 10*8, bx = 5, by = 10, rotspx = 9*8, rotspy = 10*8}
 -->8
@@ -282,7 +283,13 @@ zoom_out_animate = function()
     curs.zoomOutDone = true
 end
 rotate_animate = function()
-    curs.rotateDone = true
+    if (bnp('l')) then
+        curs.angle += .02
+    elseif (bnp('r')) then
+        curs.angle -= .02
+    end
+    -- add back in:
+    --curs.rotateDone = true
 end
 move_cursor = function()
 	if(btnp(0)) then 
@@ -348,7 +355,9 @@ function transform_and_display_buffer()
 	-- rotate sprite (using sprite 32/16 as buffer)
 
 	-- width 1 for 1x1, 2 for 2x2, 3 for 3x3
-	rspr(buffer.spx,buffer.spy,buffer.rotspx,buffer.rotspy,0,curs.mode)	
+	rspr(buffer.spx,buffer.spy,
+        buffer.rotspx,buffer.rotspy,
+        curs.angle,curs.mode)	
     print('curs.cy: '..curs.cy)
 	local x,y,z,w=project(curs.sx,curs.sy,curs.z, curs.cx, curs.cy)
     print('w: '..w)
