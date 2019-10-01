@@ -69,12 +69,12 @@ function _draw()
             draw_curs()
             print('z: '..curs.z)
             print(gstate)
-            print(curs.mapx)
-            print(curs.mapy)
+            --print(curs.mapx)
+            --print(curs.mapy)
             if (gstate != "curs") then
                 show_buffer()
                 transform_and_display_buffer()
-                print(debug_str)
+                --print(debug_str)
             end
         end
 
@@ -185,7 +185,7 @@ curs = {
 	by = 2,
     mapx = 0, -- map block position of cursor
     mapy = 0, 
-	mode = 2, -- mode x mode grid
+	mode = 1, -- mode x mode grid
 	col = 8,
     zoomInDone = false,
     zoomOutDone = false,
@@ -270,7 +270,7 @@ zoom_in_animate = function()
     if (curs.animtimer == 0) then
         curs.zoomInDone = true
     else
-        curs.z += 0.01
+        curs.z += 0.051
     end
 end
 keep_zoomed = function() 
@@ -297,8 +297,8 @@ move_cursor = function()
     -- screen
     curs.sx = curs.bx*8
     curs.sy = curs.by*8
-    curs.cx = curs.sx - 4 + 8*curs.mode -- center
-    curs.cy = curs.sy - 4 + 8*curs.mode
+    curs.cx = curs.sx + 4*curs.mode -- center
+    curs.cy = curs.sy + 4*curs.mode
     -- map loc 
     curs.mapx = curs.bx + gmap[glevel].x
     curs.mapy = curs.by + gmap[glevel].y
@@ -337,7 +337,7 @@ end
 -- page 5 (rotation)
 
 -- world to screen space project
-local cam_focal=1/2
+local cam_focal=1/8
 function project(x,y,z,cx,cy)
 	local w=cam_focal/(cam_focal+z)
  return cx+x*w,cy-y*w,z,w
@@ -351,13 +351,21 @@ function transform_and_display_buffer()
 	rspr(buffer.spx,buffer.spy,buffer.rotspx,buffer.rotspy,0,curs.mode)	
     print('curs.cy: '..curs.cy)
 	local x,y,z,w=project(curs.sx,curs.sy,curs.z, curs.cx, curs.cy)
+    print('w: '..w)
     --print("w: "..w)
     --print("x: "..x)
     --print("y: "..y)
 	-- display sprite (inc. scaling)
  	--sspr(32,16,16,16,4*curs.mode*w,4*curs.mode*w,16*w,16*w)	
-	--rectfill(curs.cx-4*curs.mode,curs.cy-4*curs.mode,curs.cx+4*curs.mode,curs.cy+4*curs.mode, 0)
- 	sspr(buffer.rotspx,buffer.rotspy,24,24,curs.sx-4*curs.mode*w,curs.sy-4*curs.mode*w,32*w,32*w)	
+	--rectfill(curs.cx,curs.cy+10,curs.cx,curs.cy-10, 15)
+	--circfill(curs.sx,curs.sy, 2, 13)
+ 	
+     --sspr(buffer.rotspx,buffer.rotspy,24,24,curs.sx-4*curs.mode*w,curs.sy-4*curs.mode*w,32*w,32*w)	
+    sspr(buffer.rotspx,buffer.rotspy,
+        8*curs.mode,8*curs.mode,
+        curs.sx-(z)*4*curs.mode+.5, curs.sy-(z)*4*curs.mode+.5, -- 1/2 * 8
+        (1+z)*8*curs.mode, (1+z)*8*curs.mode)
+        --curs.cx-4*curs.mode*w,curs.cy-4*curs.mode*w)
 
 
 end
