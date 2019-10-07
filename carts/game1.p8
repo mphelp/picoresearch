@@ -20,6 +20,13 @@ local gstate, glevel
 bnmap = {x=5, z=4, l=0, r=1, u=2, d=3 }
 bn = function(button) return btn(bnmap[button]) end
 bnp = function(button) return btnp(bnmap[button]) end
+round = function(n)
+    if ((n-flr(n)) > (ceil(n)-n)) then
+        return ceil(n)
+    else
+        return flr(n)
+    end
+end
 
 function _init()
     gstate = "title"
@@ -70,6 +77,10 @@ function _draw()
         if (gstate != "move") then
             draw_curs()
             print('z: '..curs.z)
+            print('curs mapx : '..curs.mapx)
+            print('curs mapy : '..curs.mapy)
+            print('curs cx : '..curs.cx)
+            print('curs cy : '..curs.cy)
             print(gstate)
             --print(curs.mapx)
             --print(curs.mapy)
@@ -187,7 +198,7 @@ curs = {
 	by = 2,
     mapx = 0, -- map block position of cursor
     mapy = 0, 
-	mode = 3, -- mode x mode grid
+	mode = 1, -- mode x mode grid
 	col = 10,
     zoomInDone = false,
     zoomOutDone = false,
@@ -279,14 +290,27 @@ reset_buffer = function()
     curs.angle, curs.lastangle, curs.z = 0, 0, 0
 end
 end_zoom = function()
-    -- erase animation buffer
-    reset_buffer()
-
     -- based on current angle, definitely adjust map
-
+    rewrite_pipe_map()
+    -- erase animation buffer, angles
+    reset_buffer()
 end
 show_buffer = function()
     sspr(buffer.spx,buffer.spy,48,32,80,0)
+end
+rewrite_pipe_map = function()
+    if (curs.mode == 1) then
+        new_sprn = next_pipe_spr(curs.mapx,curs.mapy,
+                    round(curs.lastangle*4))
+        mset(curs.mapx, curs.mapy, new_sprn)
+    elseif (curs.mode == 2) then
+        -- store upper left corner,
+        -- each corner goes to next
+    elseif (curs.mode == 3) then 
+        -- store upper left corner
+        -- corners go to each other
+        -- edges goes to each other
+    end
 end
 -- Animation + movement
 curs_animation_done = function()
@@ -476,9 +500,6 @@ end
 btw = function(a,b,c)
     return a >= b and a <= c 
 end
-next_pipe_loc = function()
-
-end
 next_pipe_spr = function(mx, my, qtr_clockwise_turns)
     n = mget(mx, my)
     -- red 
@@ -487,7 +508,7 @@ next_pipe_spr = function(mx, my, qtr_clockwise_turns)
     elseif (btw(n,20,21)) then
         n = ((n-20)+qtr_clockwise_turns)%2 + 20 
     elseif (btw(n,22,23)) then
-        n = ((n-22)+qtr_clockwise_turns)%2) + 22
+        n = ((n-22)+qtr_clockwise_turns)%2 + 22
     -- green
     elseif (btw(n,32,35)) then  
         n = ((n-32)+qtr_clockwise_turns)%4 + 32
@@ -500,11 +521,9 @@ next_pipe_spr = function(mx, my, qtr_clockwise_turns)
         n = ((n-48)+qtr_clockwise_turns)%4 + 48
     elseif (btw(n,52,53)) then
         n = ((n-52)+qtr_clockwise_turns)%2 + 52
-    else
-        -- something?
     end
     return n
-}
+end
 
 
 __gfx__
