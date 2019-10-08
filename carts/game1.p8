@@ -215,7 +215,7 @@ curs = {
 	by = 2,
     mapx = 0, -- map block position of cursor
     mapy = 0, 
-	mode = 2, -- mode x mode grid
+	mode = 3, -- mode x mode grid
 	col = 6,
     zoomInDone = false,
     zoomOutDone = false,
@@ -317,13 +317,13 @@ end
 --    sspr(buffer.spx,buffer.spy,48,32,80,0)
 --end
 rewrite_pipe_map = function()
+    old_sprn = {}
     if (curs.mode == 1) then
         new_sprn = next_pipe_spr(mget(curs.mapx,curs.mapy),qtr_turns())
         mset(curs.mapx, curs.mapy, new_sprn)
     elseif (curs.mode == 2) then
         
         --0,0 -> 1,0 -> 1,1 -> 0,1
-        old_sprn = {}
         for i=0,3 do 
             origx = curs.mapx + flr(shr(i+1,1))%2
             origy = curs.mapy + flr(shr(i,1))
@@ -333,8 +333,8 @@ rewrite_pipe_map = function()
             -- save sprite about to be overwritten
             origx = curs.mapx + flr(shr(i+1,1))%2
             origy = curs.mapy + flr(shr(i,1))
-            newx = curs.mapx + flr(shr((i+1+qtr_turns())%4,1))%2
-            newy = curs.mapy + flr(shr((i+qtr_turns())%4,1))
+            newx  = curs.mapx + flr(shr((i+1+qtr_turns())%4,1))%2
+            newy  = curs.mapy + flr(shr((i+qtr_turns())%4,1))
             new_sprn = next_pipe_spr(old_sprn[i],qtr_turns())
             --if (i == 3) then
             --    debug_string = "origy: "..origy..",newy: "..newy..",qtr:"..qtr_turns()..",spn:"..new_sprn
@@ -345,8 +345,38 @@ rewrite_pipe_map = function()
    
         -- corners go to each other
         --0,0 -> 2,0 -> 2,2 -> 0,2
+        for i=0,6,2 do 
+            origx = curs.mapx + shl(flr(shr(shr(i,1)+1,1))%2,1)
+            origy = curs.mapy + shl(flr(shr(i,2)),1)
+            old_sprn[i] = mget(origx,origy)
+        end
+        for i=0,6,2 do
+            -- save sprite about to be overwritten
+            origx = curs.mapx + shl(flr(shr(shr(i,1)+1,1))%2,1)
+            origy = curs.mapy + shl(flr(shr(i,2)),1)
+            newx  = curs.mapx + shl(flr(shr(shr((i+2*qtr_turns())%8,1)+1,1))%2,1)
+            newy  = curs.mapy + shl(flr(shr((i+2*qtr_turns())%8,2)),1)
+            new_sprn = next_pipe_spr(old_sprn[i],qtr_turns())
+            mset(newx, newy, new_sprn) -- move new rotated pipe
+        end
         -- edges goes to each other
         --1,0 -> 2,1 -> 1,2 -> 0,1
+
+        -- edges were UNSUCCESSFUL TRY AGAIN
+        --for i=1,7,2 do
+        --    origx = curs.mapx + (shr(i+1,1)%4)%shr(i+1,1)
+        --    origy = curs.mapy + shr(i-1,1)%(5-shr(i-1,1))
+        --    old_sprn[i] = mget(origx,origy)
+        --end
+        --for i=1,7,2 do
+        --    origx = curs.mapx + (shr(i+1,1)%4)%shr(i+1,1)
+        --    origy = curs.mapy + shr(i-1,1)%(5-shr(i-1,1))
+        --    newx  = curs.mapx + (shr((i+1+2*qtr_turns())%8,1)%4)%shr((i+1+2*qtr_turns())%8,1)
+        --    newy  = curs.mapy + shr((i-1+2*qtr_turns())%8,1)%(5-shr((i-1+2*qtr_turns())%8,1))
+        --    new_sprn = next_pipe_spr(old_sprn[i],qtr_turns())
+        --    mset(newx, newy, new_sprn) -- move new rotated pipe
+
+        --end
     end
 end
 -- Animation + movement
