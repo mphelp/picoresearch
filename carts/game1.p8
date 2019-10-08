@@ -85,7 +85,7 @@ function _draw()
             --print(curs.mapx)
             --print(curs.mapy)
             if (gstate != "curs") then
-                show_buffer()
+                --show_buffer()
                 transform_and_display_buffer()
                 --print(debug_str)
             end
@@ -301,7 +301,7 @@ end
 rewrite_pipe_map = function()
     if (curs.mode == 1) then
         new_sprn = next_pipe_spr(curs.mapx,curs.mapy,
-                    round(curs.lastangle*4))
+            round(curs.lastangle*4))
         mset(curs.mapx, curs.mapy, new_sprn)
     elseif (curs.mode == 2) then
         -- store upper left corner,
@@ -334,7 +334,8 @@ zoom_animate_dir = function(dir)
         end
     end
 end
-keep_zoomed = function() 
+keep_zoomed = function()
+    curs.lastangle = curs.angle
     curs.zoomInDone = false
     curs.zoomOutDone = false
     curs.rotateDone = false
@@ -432,6 +433,11 @@ function project(x,y,z,cx,cy)
  return cx+x*w,cy-y*w,z,w
 end
 function transform_and_display_buffer()
+    local z = curs.z
+    local sx = curs.sx-(z)*4*curs.mode+.5
+    local sy = curs.sy-(z)*4*curs.mode+.5
+    local w = (1+z)*8*curs.mode-.5
+    rectfill(sx,sy,sx+w,sy+w,10)
     -- NOTE: need before and after rot sprite regions
 
 	-- rotate sprite (using sprite 32/16 as buffer)
@@ -447,8 +453,8 @@ function transform_and_display_buffer()
     else
         print('curs.lastang: 0')
     end
-	local x,y,z,w=project(curs.sx,curs.sy,curs.z, curs.cx, curs.cy)
-    print('w: '..w)
+	--local x,y,z,w=project(curs.sx,curs.sy,curs.z, curs.cx, curs.cy)
+    --print('w: '..w)
     --print("w: "..w)
     --print("x: "..x)
     --print("y: "..y)
