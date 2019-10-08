@@ -27,6 +27,26 @@ round = function(n)
         return flr(n)
     end
 end
+-- debug
+debug_print = function(DEBUG)
+    if (DEBUG) then
+        print(gstate)
+        print('z: '..curs.z)
+        print('curs mapx : '..curs.mapx)
+        print('curs mapy : '..curs.mapy)
+        print('curs cx : '..curs.cx)
+        print('curs cy : '..curs.cy)
+        print(curs.mapx)
+        print(curs.mapy)
+        print('curs.cy: '..curs.cy)
+        print('curs.angle: '..curs.angle)
+        if (curs.lastangle != nil) then
+            print('curs.lastang: '..curs.lastangle)
+        else
+            print('curs.lastang: 0')
+        end
+    end
+end
 
 function _init()
     gstate = "title"
@@ -60,11 +80,12 @@ function _update()
     elseif (gstate == "move") then
         move_player()
 
-        animtimer_increment()
+        pl_animtimer_incr()
     end
 end
 
 function _draw()
+    debug_print(config.DEBUG)
     if (gstate == "title") then
         draw_title()
     else 
@@ -75,23 +96,12 @@ function _draw()
         draw_player()
         draw_border()
         if (gstate != "move") then
-            draw_curs()
-            print('z: '..curs.z)
-            print('curs mapx : '..curs.mapx)
-            print('curs mapy : '..curs.mapy)
-            print('curs cx : '..curs.cx)
-            print('curs cy : '..curs.cy)
-            print(gstate)
-            --print(curs.mapx)
-            --print(curs.mapy)
-            if (gstate != "curs") then
-                --show_buffer()
+            if (gstate == "curs") then
+                draw_curs()
+            else
                 transform_and_display_buffer()
-                --print(debug_str)
             end
         end
-
-        --map(17, 0, 25, 7, 7, 7) -- celx, cely, sx, sy, celw, celh, [layer]
     end
 end
 
@@ -155,7 +165,8 @@ end
 -- page 3 (config)
 
 config = {
-	bgcolor = 0
+	bgcolor = 0,
+    DEBUG = false
 }
 -- g means global
 gsprites = {
@@ -189,6 +200,7 @@ pl = {
     lookLeft = false,
     resting = true,
     animtimer = 0,
+    animlength = 10,
     frame = 'rest'
 }
 curs = {
@@ -204,13 +216,14 @@ curs = {
     zoomOutDone = false,
     rotateDone = false,
     animtimer = 0,
-    animlength = 20,
+    animlength = 12,
     z = 0, -- zoom level
     cx = nil, -- center of zoom/rot
     cy = nil,
     angle = 0,
     lastangle = nil,
-    rotDir = nil
+    rotDir = nil,
+    shadowCol = 0
 }
 buffer = {spx = 5*8, spy = 10*8, bx = 5, by = 10, rotspx = 9*8, rotspy = 10*8}
 -->8
@@ -295,9 +308,9 @@ end_zoom = function()
     -- erase animation buffer, angles
     reset_buffer()
 end
-show_buffer = function()
-    sspr(buffer.spx,buffer.spy,48,32,80,0)
-end
+--show_buffer = function()
+--    sspr(buffer.spx,buffer.spy,48,32,80,0)
+--end
 rewrite_pipe_map = function()
     if (curs.mode == 1) then
         new_sprn = next_pipe_spr(curs.mapx,curs.mapy,
@@ -413,11 +426,11 @@ move_player = function()
     -- NO JUMPING CURRENTLY!
     pl.frame = "rest"
 end
-animtimer_increment = function()
-    pl.animtimer = (pl.animtimer + 1)%10
+pl_animtimer_incr = function()
+    pl.animtimer = (pl.animtimer + 1)%(pl.animlength)
 end
 next_pl_walk = function()
-    if (pl.animtimer > 4) then
+    if (pl.animtimer >= pl.animlength/2) then
         return "walk1";
     else 
         return "walk2";
@@ -436,41 +449,16 @@ function transform_and_display_buffer()
     local z = curs.z
     local sx = curs.sx-(z)*4*curs.mode+.5
     local sy = curs.sy-(z)*4*curs.mode+.5
-    local w = (1+z)*8*curs.mode-.5
-    rectfill(sx,sy,sx+w,sy+w,10)
-    -- NOTE: need before and after rot sprite regions
-
-	-- rotate sprite (using sprite 32/16 as buffer)
-
-	-- width 1 for 1x1, 2 for 2x2, 3 for 3x3
+    local w = (1+z)*8*curs.mode
+    -- Cursor buffer shadow
+    rectfill(sx,sy,sx+w-1.5,sy+w-1.5,curs.shadowCol)
+	-- Rotate pipes
 	rspr(buffer.spx,buffer.spy,
         buffer.rotspx,buffer.rotspy,
         curs.angle,curs.mode)	
-    print('curs.cy: '..curs.cy)
-    print('curs.angle: '..curs.angle)
-    if (curs.lastangle != nil) then
-        print('curs.lastang: '..curs.lastangle)
-    else
-        print('curs.lastang: 0')
-    end
-	--local x,y,z,w=project(curs.sx,curs.sy,curs.z, curs.cx, curs.cy)
-    --print('w: '..w)
-    --print("w: "..w)
-    --print("x: "..x)
-    --print("y: "..y)
-	-- display sprite (inc. scaling)
- 	--sspr(32,16,16,16,4*curs.mode*w,4*curs.mode*w,16*w,16*w)	
-	--rectfill(curs.cx,curs.cy+10,curs.cx,curs.cy-10, 15)
-	--circfill(curs.sx,curs.sy, 2, 13)
- 	
-     --sspr(buffer.rotspx,buffer.rotspy,24,24,curs.sx-4*curs.mode*w,curs.sy-4*curs.mode*w,32*w,32*w)	
-    sspr(buffer.rotspx,buffer.rotspy,
-        8*curs.mode,8*curs.mode,
-        curs.sx-(z)*4*curs.mode+.5, curs.sy-(z)*4*curs.mode+.5, -- 1/2 * 8
-        (1+z)*8*curs.mode, (1+z)*8*curs.mode)
-        --curs.cx-4*curs.mode*w,curs.cy-4*curs.mode*w)
-
-
+ 	-- Display pipes
+    sspr(buffer.rotspx,buffer.rotspy,8*curs.mode,8*curs.mode,
+        sx, sy, w, w)
 end
 local rspr_clear_col=0
 function rspr(sx,sy,x,y,a,w)
