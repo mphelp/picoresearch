@@ -22,13 +22,24 @@ col_region = function(col)
 end
 
 function _draw()
-	
+	cls()
 	if (btn(0)) col_region(1)
 	if (btn(1)) col_region(2)
 	if (btn(2)) col_region(3)
 	if (btn(3)) col_region(4)
 	
 	sspr(0,32,3*8,3*8,52,52)
+	a = 3
+	b = 2
+	--print(''..flr(a/b))
+	d = {{}}
+	
+	print(d[1]=={})
+	print(d[1][1] == nil)
+	--print(d[3][3])
+	for i = 0,3 do
+		print(i)
+	end
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
