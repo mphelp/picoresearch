@@ -343,6 +343,8 @@ rewrite_pipe_map = function()
         end
     elseif (curs.mode == 3) then 
    
+        new_sprn = next_pipe_spr(mget(curs.mapx+1,curs.mapy+1),qtr_turns())
+        mset(curs.mapx+1, curs.mapy+1, new_sprn)
         -- corners go to each other
         --0,0 -> 2,0 -> 2,2 -> 0,2
         for i=0,6,2 do 
