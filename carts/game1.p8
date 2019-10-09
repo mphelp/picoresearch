@@ -362,21 +362,20 @@ rewrite_pipe_map = function()
         -- edges goes to each other
         --1,0 -> 2,1 -> 1,2 -> 0,1
 
-        -- edges were UNSUCCESSFUL TRY AGAIN
-        --for i=1,7,2 do
-        --    origx = curs.mapx + (shr(i+1,1)%4)%shr(i+1,1)
-        --    origy = curs.mapy + shr(i-1,1)%(5-shr(i-1,1))
-        --    old_sprn[i] = mget(origx,origy)
-        --end
-        --for i=1,7,2 do
-        --    origx = curs.mapx + (shr(i+1,1)%4)%shr(i+1,1)
-        --    origy = curs.mapy + shr(i-1,1)%(5-shr(i-1,1))
-        --    newx  = curs.mapx + (shr((i+1+2*qtr_turns())%8,1)%4)%shr((i+1+2*qtr_turns())%8,1)
-        --    newy  = curs.mapy + shr((i-1+2*qtr_turns())%8,1)%(5-shr((i-1+2*qtr_turns())%8,1))
-        --    new_sprn = next_pipe_spr(old_sprn[i],qtr_turns())
-        --    mset(newx, newy, new_sprn) -- move new rotated pipe
+        for i=1,7,2 do
+            origx = curs.mapx + (shr(i+1,1)%4)%(5-shr(i+1,1))
+            origy = curs.mapy + shr(i-1,1)%(5-shr(i-1,1))
+            old_sprn[i] = mget(origx,origy)
+        end
+        for i=1,7,2 do
+            origx = curs.mapx + (shr(i+1,1)%4)%(5-shr(i+1,1))
+            origy = curs.mapy + shr(i-1,1)%(5-shr(i-1,1))
+            newx  = curs.mapx + (shr((i+1+2*qtr_turns())%8,1)%4)%(5-shr((i+1+2*qtr_turns())%8,1))
+            newy  = curs.mapy + shr((i-1+2*qtr_turns())%8,1)%(5-shr((i-1+2*qtr_turns())%8,1))
+            new_sprn = next_pipe_spr(old_sprn[i],qtr_turns())
+            mset(newx, newy, new_sprn) -- move new rotated pipe
 
-        --end
+        end
     end
 end
 -- Animation + movement
