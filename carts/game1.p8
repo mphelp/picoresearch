@@ -194,7 +194,7 @@ pl = {
     lookLeft = false,
     resting = true,
     animtimer = 0,
-    animlength = 10,
+    animlength = 4,
     frame = 'rest'
 }
 curs = {
