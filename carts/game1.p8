@@ -167,6 +167,11 @@ config = {
     DEBUG = false
 }
 -- g means global
+gst = {
+    1 = {
+        s = {x=33,y=12}, t = {x=46,y=11}
+    }
+}
 gsprites = {
     border = 112,
     hammer = 65,
