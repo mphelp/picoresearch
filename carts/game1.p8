@@ -107,6 +107,7 @@ function _draw()
             print(debug_string)
             if (gstate == "curs") then
                 draw_curs()
+                print(debug_string)
             else
                 transform_and_display_buffer()
             end
@@ -168,8 +169,9 @@ config = {
 }
 -- g means global
 gst = {
-    1 = {
-        s = {x=33,y=12}, t = {x=46,y=11}
+    level1 = {
+        s = {x=33,y=12}, 
+        t = {x=46,y=11}
     }
 }
 gsprites = {
@@ -298,9 +300,14 @@ end_zoom = function()
     -- based on current angle, adjust map
     rewrite_pipe_map()
     -- erase animation buffer, reset cursor angles
-    local didRotate = reset_buffer()
+    local didrotate = reset_buffer()
     -- shake
-    shake_camera(didRotate)
+    shake_camera(didrotate)
+    -- check solution
+    if (didrotate) then 
+        debug_string = debug_string .. "1"
+        check_solution()
+    end
 end
 rewrite_pipe_map = function()
     old_sprn = {}
@@ -361,8 +368,8 @@ reset_buffer = function()
     curs.angle, curs.lastangle, curs.z = 0, 0, 0
     return didRotate
 end
-shake_camera = function(didRotate)
-    if (gstate == "endzoom" and didRotate) then
+shake_camera = function(didrotate)
+    if (gstate == "endzoom" and didrotate) then
         cam.shake = 1
         if (rnd(1)>0.5) then sfx(32) else sfx(33) end
     end
@@ -373,6 +380,10 @@ shake_camera = function(didRotate)
     camera(shakex,shakey)
     cam.shake = cam.shake*0.80
     if (cam.shake<0.03) cam.shake=0
+end
+check_solution = function()
+    local x, y = gst[glevel].s.x, gst[glevel].s.y 
+    debug_string = debug_string .. x .. y
 end
 -- Animation + movement
 curs_animation_done = function()
@@ -692,6 +703,8 @@ __sfx__
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000500003065015650126200f6200d6200c6200a62007620076200662004610016100260001600016000060000600006000060000000000000000000000000000000000000000000000000000000000000000000
 000500003d65015650126200f6200d6200c6200a62007620076200662004620016100060000600016000060000600006000060000000000000000000000000000000000000000000000000000000000000000000
+001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+011000001d1321f130211402415024152241402413224130241202411024115000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __music__
 01 08404344
 02 09424344
