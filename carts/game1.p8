@@ -107,7 +107,6 @@ function _draw()
             print(debug_string)
             if (gstate == "curs") then
                 draw_curs()
-                print(debug_string)
             else
                 transform_and_display_buffer()
             end
@@ -229,7 +228,8 @@ curs = {
     angle = 0,
     lastangle = nil,
     rotDir = nil,
-    shadowCol = 0
+    shadowCol = 0,
+    no_solution_yet = true
 }
 buffer = {spx = 5*8, spy = 10*8, bx = 5, by = 10, rotspx = 9*8, rotspy = 10*8}
 cam = {shake=0}
@@ -305,8 +305,11 @@ end_zoom = function()
     shake_camera(didrotate)
     -- check solution
     if (didrotate) then 
-        debug_string = debug_string .. "1"
-        check_solution()
+        --debug_string = debug_string .. "1"
+        if is_solution() and curs.no_solution_yet then 
+            music(16)
+            curs.no_solution_yet = false 
+        end
     end
 end
 rewrite_pipe_map = function()
@@ -381,9 +384,60 @@ shake_camera = function(didrotate)
     cam.shake = cam.shake*0.80
     if (cam.shake<0.03) cam.shake=0
 end
-check_solution = function()
-    local x, y = gst[glevel].s.x, gst[glevel].s.y 
-    debug_string = debug_string .. x .. y
+is_solution = function()
+    local x, y = gst[glevel].s.x+1, gst[glevel].s.y 
+    -- red: 1 right side, 2 bottom side, 4 left side, 8 top side
+    -- green: 16, 32, 64, 128
+    sol_dir = 2 -- left side
+    while (not target_reached(x,y)) do 
+        curr_spr = mget(x,y)
+        if (not is_pipe_spr(curr_spr)) then 
+            return false
+        else 
+            red_fl = fget(curr_spr) % 16
+            debug_string = debug_string ..red_fl .."\n"
+            dir = {}
+            dir[0] = red_fl % 2
+            dir[1] = flr(shr(red_fl,1)) % 2
+            dir[2] = flr(shr(red_fl,2)) % 2
+            dir[3] = flr(shr(red_fl,3)) % 2
+            if (dir[sol_dir] == 0) then 
+                debug_string = debug_string .. "sol_dir "..sol_dir
+                return false
+            end
+            -- straight pipe is default
+            if (dir[(sol_dir+2)%4] == 1) then 
+                -- continue same direction
+            elseif (dir[(sol_dir+1)%4] == 1) then 
+                -- turn left
+                debug_string = debug_string .. "turn left\n"
+                sol_dir = (sol_dir+1)%4
+            elseif (dir[(sol_dir-1)%4] == 1) then 
+                -- turn right
+                sol_dir = (sol_dir-1)%4
+                debug_string = debug_string .. "turn right\n"
+            end
+            debug_string = debug_string .. "x:"..x..",y:"..y.."\n"
+            debug_string = debug_string .. dir[3]..dir[2]..dir[1]..dir[0].."\n"
+            -- move x and y
+            x += x_from_sol_dir(sol_dir)
+            y += y_from_sol_dir(sol_dir)
+            debug_string = debug_string .. y_from_sol_dir(0)..y_from_sol_dir(1)..y_from_sol_dir(2)..y_from_sol_dir(3).."\n"
+        end
+    end
+    return true
+end
+x_from_sol_dir = function(sol_dir)
+    return (sol_dir%(5-sol_dir))-1
+end
+y_from_sol_dir = function(sol_dir)
+    return (((sol_dir+1)%4)%(4-sol_dir))-1
+end
+target_reached = function(x,y)
+    return (x==gst[glevel].t.x) and (y==gst[glevel].t.y)
+end
+is_pipe_spr = function(n)
+    return btw(n,16,23) or btw(n,32,39) or btw(n,48,53)
 end
 -- Animation + movement
 curs_animation_done = function()
