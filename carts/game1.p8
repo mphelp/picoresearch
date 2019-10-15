@@ -385,6 +385,7 @@ shake_camera = function(didrotate)
     if (cam.shake<0.03) cam.shake=0
 end
 is_solution = function()
+    debug_string = ""
     local x, y = gst[glevel].s.x+1, gst[glevel].s.y 
     -- red: 1 right side, 2 bottom side, 4 left side, 8 top side
     -- green: 16, 32, 64, 128
@@ -395,34 +396,31 @@ is_solution = function()
             return false
         else 
             red_fl = fget(curr_spr) % 16
-            debug_string = debug_string ..red_fl .."\n"
+            --debug_string = debug_string ..red_fl .."\n"
             dir = {}
             dir[0] = red_fl % 2
             dir[1] = flr(shr(red_fl,1)) % 2
             dir[2] = flr(shr(red_fl,2)) % 2
             dir[3] = flr(shr(red_fl,3)) % 2
             if (dir[sol_dir] == 0) then 
-                debug_string = debug_string .. "sol_dir "..sol_dir
                 return false
             end
             -- straight pipe is default
             if (dir[(sol_dir+2)%4] == 1) then 
                 -- continue same direction
+                debug_string = debug_string .. "go straight\n"
             elseif (dir[(sol_dir+1)%4] == 1) then 
                 -- turn left
                 debug_string = debug_string .. "turn left\n"
-                sol_dir = (sol_dir+1)%4
+                sol_dir = (sol_dir-1)%4
             elseif (dir[(sol_dir-1)%4] == 1) then 
                 -- turn right
-                sol_dir = (sol_dir-1)%4
+                sol_dir = (sol_dir+1)%4
                 debug_string = debug_string .. "turn right\n"
             end
-            debug_string = debug_string .. "x:"..x..",y:"..y.."\n"
-            debug_string = debug_string .. dir[3]..dir[2]..dir[1]..dir[0].."\n"
             -- move x and y
             x += x_from_sol_dir(sol_dir)
             y += y_from_sol_dir(sol_dir)
-            debug_string = debug_string .. y_from_sol_dir(0)..y_from_sol_dir(1)..y_from_sol_dir(2)..y_from_sol_dir(3).."\n"
         end
     end
     return true
@@ -431,7 +429,7 @@ x_from_sol_dir = function(sol_dir)
     return (sol_dir%(5-sol_dir))-1
 end
 y_from_sol_dir = function(sol_dir)
-    return (((sol_dir+1)%4)%(4-sol_dir))-1
+    return -1*((((sol_dir+1)%4)%(4-sol_dir))-1)
 end
 target_reached = function(x,y)
     return (x==gst[glevel].t.x) and (y==gst[glevel].t.y)
