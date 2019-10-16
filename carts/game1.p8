@@ -32,6 +32,7 @@ qtr_turns = function()
 end
 -- debug
 local debug_string=""
+local soln_string = ""
 debug_print = function(DEBUG)
     if (DEBUG) then
         print(gstate)
@@ -105,6 +106,7 @@ function _draw()
         draw_border()
         if (gstate != "move") then
             print(debug_string)
+            print(soln_string)
             if (gstate == "curs") then
                 draw_curs()
             else
@@ -165,7 +167,8 @@ end
 config = {
 	bgcolor = 0,
     DEBUG = false,
-    DEBUG_SOLN = false
+    DEBUG_SOLN = false,
+    SHOW_SOLN = true
 }
 -- g means global
 gst = {
@@ -257,7 +260,7 @@ hammer_check = function()
     end
 end
 curs_check = function()
-    if (gstate == "curs" and bnp('z')) then
+    if (gstate == "curs" and bnp('z') and curs_on_pipe()) then
         gstate = "beginzoom"
     elseif(gstate == "beginzoom") then
         gstate = "zoomin"
@@ -274,6 +277,9 @@ curs_check = function()
     elseif (gstate == "endzoom") then
         gstate = "curs"
     end
+end
+curs_on_pipe = function()
+    return is_pipe_spr(mget(curs.mapx, curs.mapy))
 end
 
 -- Map modification with cells
@@ -306,7 +312,8 @@ end_zoom = function()
     shake_camera(didrotate)
     -- check solution
     if (didrotate) then 
-        if is_solution() and curs.no_solution_yet then 
+        if is_solution() and curs.no_solution_yet then
+            soln_string = "VALID SOLUTION!" 
             music(16, 0, 12)
             curs.no_solution_yet = false 
         end
