@@ -176,9 +176,8 @@ config = {
 -- g means global
 gst = {
     level1 = {
-        s = {x=33,y=12}, 
-        t = {x=46,y=11}
-    }
+        s = {x=33,y=12}, t = {x=46,y=11}
+    },
 }
 gsprites = {
     border = 112,
@@ -222,7 +221,7 @@ curs = {
 	by = 5,
     mapx = 0, -- map block position of cursor
     mapy = 0, 
-	mode = 1, -- mode x mode grid
+	mode = 2, -- mode x mode grid
 	col = 6,
     zoomInDone = false,
     zoomOutDone = false,
@@ -263,7 +262,7 @@ hammer_check = function()
     end
 end
 curs_check = function()
-    if (gstate == "curs" and bnp('z') and curs_on_pipe()) then
+    if (gstate == "curs" and bnp('z') and true) then
         gstate = "beginzoom"
     elseif(gstate == "beginzoom") then
         gstate = "zoomin"
@@ -644,6 +643,7 @@ end
 
 -- playtesters in order of appearance:
 -- tommy krug
+-- edward atkinson
 __gfx__
 000000000000000000000000000007000000000000000000dd11dd11d666666d0000000000000000000000000000000000000000000000000000000000000000
 000000000000000000000700000000000000000000000000dd11dd116d6666d10000000000000000000000000000000000000000000000880000000000000000
