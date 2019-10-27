@@ -14,7 +14,7 @@ __lua__
 --    come through the pipes. 
 
 -- gstate: move, curs, beginzoom, zoomin, zoomed, rotate, zoomout
-local gstate, glevel
+local gstate, glevel=0
 
 -- macros
 bnmap = {x=5, z=4, l=0, r=1, u=2, d=3 }
@@ -63,7 +63,13 @@ handle_state_transitions = function()
     curs_check()
 end
 handle_level_transitions = function()
-   -- nothing yet 
+    soln_string = ""
+    if (curs.didrotate and is_solution() and curs.no_solution_yet) then
+            soln_string = "VALID SOLUTION!" 
+            music(16, 0, 12)
+            curs.no_solution_yet = false 
+            glevel = glevel + 1
+    end
 end
 handle_global_effects = function()
     shake_camera()
@@ -175,9 +181,12 @@ config = {
 }
 -- g means global
 gst = {
-    level1 = {
+    [1] = {
         s = {x=33,y=12}, t = {x=46,y=11}
     },
+    [2] = {
+        s = {x=50,y=12}, t = {x=61,y=8}
+    }
 }
 gsprites = {
     border = 112,
@@ -190,8 +199,10 @@ gmap = {
     border = {x = 112, y = 0},
     land = {x = 16,y = 0},
     title = {x = 0, y = 0},
-    level0 = {x = 16, y = 0},
-    level1 = {x = 32, y = 0}
+    -- levels
+    [0] = {x = 16, y = 0},
+    [1] = {x = 32, y = 0},
+    [2] = {x = 48, y = 0}
 }
 pl = {
     x = 30,
@@ -221,7 +232,7 @@ curs = {
 	by = 5,
     mapx = 0, -- map block position of cursor
     mapy = 0, 
-	mode = 2, -- mode x mode grid
+	mode = 1, -- mode x mode grid
 	col = 6,
     zoomInDone = false,
     zoomOutDone = false,
@@ -235,7 +246,8 @@ curs = {
     lastangle = nil,
     rotDir = nil,
     shadowCol = 0,
-    no_solution_yet = true
+    no_solution_yet = true,
+    didrotate = false
 }
 buffer = {spx = 5*8, spy = 10*8, bx = 5, by = 10, rotspx = 9*8, rotspy = 10*8}
 cam = {shake=0}
@@ -248,7 +260,7 @@ title_check = function()
     if (gstate == "title") then
         if (btn(4) or btn(5)) then
             gstate = "move"
-            glevel = "level1"
+            glevel = 1
         end
     end
 end
@@ -309,17 +321,9 @@ end_zoom = function()
     -- based on current angle, adjust map
     rewrite_pipe_map()
     -- erase animation buffer, reset cursor angles
-    local didrotate = reset_buffer()
-    -- shake
-    shake_camera(didrotate)
-    -- check solution
-    if (didrotate) then 
-        if is_solution() and curs.no_solution_yet then
-            soln_string = "VALID SOLUTION!" 
-            music(16, 0, 12)
-            curs.no_solution_yet = false 
-        end
-    end
+    curs.didrotate = reset_buffer()
+    -- (potentially) shake
+    shake_camera(curs.didrotate)
 end
 rewrite_pipe_map = function()
     old_sprn = {}
@@ -376,9 +380,9 @@ reset_buffer = function()
         end
     end
     -- reset angle, zoom to 0
-    local didRotate = (curs.lastangle%1 != 0)
+    local didrotate = (curs.lastangle%1 != 0)
     curs.angle, curs.lastangle, curs.z = 0, 0, 0
-    return didRotate
+    return didrotate
 end
 shake_camera = function(didrotate)
     if (gstate == "endzoom" and didrotate) then
