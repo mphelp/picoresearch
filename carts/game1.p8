@@ -232,7 +232,7 @@ curs = {
 	by = 5,
     mapx = 0, -- map block position of cursor
     mapy = 0, 
-	mode = 1, -- mode x mode grid
+	mode = 2, -- mode x mode grid
 	col = 6,
     zoomInDone = false,
     zoomOutDone = false,
@@ -274,7 +274,7 @@ hammer_check = function()
     end
 end
 curs_check = function()
-    if (gstate == "curs" and bnp('z') and true) then
+    if (gstate == "curs" and bnp('z') and curs_on_pipe()) then
         gstate = "beginzoom"
     elseif(gstate == "beginzoom") then
         gstate = "zoomin"
@@ -293,8 +293,16 @@ curs_check = function()
     end
 end
 curs_on_pipe = function()
-    return is_pipe_spr(mget(curs.mapx, curs.mapy))
+    pipe_located = false
+    for i=curs.mapx , curs.mapx + curs.mode - 1 do 
+        for j=curs.mapy , curs.mapy + curs.mode - 1 do 
+            pipe_located = pipe_located or is_pipe_spr(mget(i,j))
+        end 
+    end 
+    return pipe_located
 end
+curs_in_bounds = function() 
+end 
 
 -- Map modification with cells
 debug_str = ""
