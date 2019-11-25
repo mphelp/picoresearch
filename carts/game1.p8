@@ -65,7 +65,7 @@ handle_state_transitions = function()
 end
 handle_level_transitions = function()
     soln_string = ""
-    if (curs.didrotate and is_solution()) then
+    if (curs.didrotate and is_solution_red() and is_solution_green()) then
             soln_string = "VALID SOLUTION!" 
             play_solution()
             --music(16, 0, 12)
@@ -183,14 +183,21 @@ config = {
 }
 -- g means global
 gst = {
-    [1] = {
-        s = {x=33,y=12}, t = {x=46,y=11}
+    [1] = { 
+        r = { s = {x=33,y=12}, t = {x=46,y=11} },
+        g = { },
     },
     [2] = {
-        s = {x=50,y=12}, t = {x=61,y=8}
+        r = { s = {x=50,y=12}, t = {x=61,y=8} },
+        g = { },
     },
     [3] = {
-        s = {x=66,y=12}, t = {x=77,y=8}
+        r = { },
+        g = { s = {x=66,y=12}, t = {x=77,y=8} },
+    },
+    [4] = {
+        r = { s = {x=82,y=13}, t = {x=93,y=8 } },
+        g = { s = {x=82,y=7 }, t = {x=93,y=11} },
     }
 }
 gsprites = {
@@ -208,7 +215,8 @@ gmap = {
     [0] = {x = 16, y = 0},
     [1] = {x = 32, y = 0},
     [2] = {x = 48, y = 0},
-    [3] = {x = 64, y = 0}
+    [3] = {x = 64, y = 0},
+    [4] = {x = 80, y = 0},
 }
 pl = {
     x = 30,
@@ -411,13 +419,17 @@ shake_camera = function(didrotate)
     cam.shake = cam.shake*0.80
     if (cam.shake<0.03) cam.shake=0
 end
-is_solution = function()
+is_solution_red = function()
     debug_string = ""
-    local x, y = gst[glevel].s.x+1, gst[glevel].s.y 
+    -- null check
+    if (gst[glevel].r.s == nil or gst[glevel].r.t == nil) then 
+        return true
+    end 
+    local x, y = gst[glevel].r.s.x+1, gst[glevel].r.s.y 
     -- red: 1 right side, 2 bottom side, 4 left side, 8 top side
     -- green: 16, 32, 64, 128 (unfinished)
     sol_dir = 2 -- left side
-    while (not target_reached(x,y)) do 
+    while (not target_reached(x,y,true)) do 
         curr_spr = mget(x,y)
         if (not is_pipe_spr(curr_spr)) then 
             return false
@@ -452,15 +464,64 @@ is_solution = function()
     end
     return true
 end
+is_solution_green = function()
+    debug_string = ""
+    -- null check
+    if (gst[glevel].g.s == nil or gst[glevel].g.t == nil) then 
+        return true
+    end 
+    local x, y = gst[glevel].g.s.x+1, gst[glevel].g.s.y 
+    -- red: 1 right side, 2 bottom side, 4 left side, 8 top side
+    -- green: 16, 32, 64, 128 (unfinished)
+    sol_dir = 2 -- left side
+    while (not target_reached(x,y,false)) do 
+        curr_spr = mget(x,y)
+        if (not is_pipe_spr(curr_spr)) then 
+            return false
+        else 
+            green_fl = fget(curr_spr)
+            dir = {}
+            dir[0] = flr(shr(green_fl,4)) % 2
+            dir[1] = flr(shr(green_fl,5)) % 2
+            dir[2] = flr(shr(green_fl,6)) % 2
+            dir[3] = flr(shr(green_fl,7)) % 2
+            if (dir[sol_dir] == 0) then 
+                return false
+            end
+            -- straight pipe is default
+            if (dir[(sol_dir+2)%4] == 1) then 
+                -- continue same direction
+                if (config.DEBUG_SOLN) debug_string = x..","..y.." go straight\n"
+            elseif (dir[(sol_dir+1)%4] == 1) then 
+                -- turn left
+                if (config.DEBUG_SOLN) debug_string = x..","..y.." turn left\n"
+                sol_dir = (sol_dir-1)%4
+            elseif (dir[(sol_dir-1)%4] == 1) then 
+                -- turn right
+                if (config.DEBUG_SOLN) debug_string = x..","..y.." turn right\n"
+                sol_dir = (sol_dir+1)%4
+            end
+            -- move x and y
+            x += x_from_sol_dir(sol_dir)
+            y += y_from_sol_dir(sol_dir)
+            if (config.DEBUG_SOLN) debug_string = debug_string .."next xy: "..x..","..y.."\n"
+        end
+    end
+    return true
+end
 x_from_sol_dir = function(sol_dir)
     return (sol_dir%(5-sol_dir))-1
 end
 y_from_sol_dir = function(sol_dir)
     return -1*((((sol_dir+1)%4)%(4-sol_dir))-1)
 end
-target_reached = function(x,y)
+target_reached = function(x,y,isRed)
     if (config.DEBUG_SOLN) target_string = "target: "..gst[glevel].t.x ..",".. gst[glevel].t.y
-    return (x==gst[glevel].t.x) and (y==gst[glevel].t.y)
+    if (isRed) then 
+        return (x==gst[glevel].r.t.x) and (y==gst[glevel].r.t.y)
+    else 
+        return (x==gst[glevel].g.t.x) and (y==gst[glevel].g.t.y)
+    end
 end
 is_pipe_spr = function(n)
     return btw(n,16,23) or btw(n,32,39) or btw(n,48,53)
