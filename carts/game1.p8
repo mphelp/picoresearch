@@ -194,6 +194,10 @@ gst = {
     [3] = {
         r = { },
         g = { s = {x=66,y=12}, t = {x=77,y=8} },
+    },
+    [4] = {
+        r = { s = {x=82,y=13}, t = {x=93,y=8 } },
+        g = { s = {x=82,y=7 }, t = {x=93,y=11} },
     }
 }
 gsprites = {
@@ -211,7 +215,8 @@ gmap = {
     [0] = {x = 16, y = 0},
     [1] = {x = 32, y = 0},
     [2] = {x = 48, y = 0},
-    [3] = {x = 64, y = 0}
+    [3] = {x = 64, y = 0},
+    [4] = {x = 80, y = 0},
 }
 pl = {
     x = 30,
@@ -474,12 +479,12 @@ is_solution_green = function()
         if (not is_pipe_spr(curr_spr)) then 
             return false
         else 
-            red_fl = fget(curr_spr) % 16
+            green_fl = fget(curr_spr)
             dir = {}
-            dir[0] = red_fl % 2
-            dir[1] = flr(shr(red_fl,1)) % 2
-            dir[2] = flr(shr(red_fl,2)) % 2
-            dir[3] = flr(shr(red_fl,3)) % 2
+            dir[0] = flr(shr(green_fl,4)) % 2
+            dir[1] = flr(shr(green_fl,5)) % 2
+            dir[2] = flr(shr(green_fl,6)) % 2
+            dir[3] = flr(shr(green_fl,7)) % 2
             if (dir[sol_dir] == 0) then 
                 return false
             end
