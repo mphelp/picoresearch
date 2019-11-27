@@ -175,8 +175,18 @@ draw_header = function()
     for i = 0,15 do 
         spr(207,i*8,8)
     end
-    --rectfill(0,0,127,11,gcolors.header_shadow)
-    rectfill(0,0,127,10,gcolors.header)
+    header_breaks = {30,60,75,90}
+    rectfill(0,0,127,11,gcolors.header_shadow)
+    -- draw different subheaders
+    rectfill(1,1,header_breaks[1],11,gcolors.header)
+    for i=1,#header_breaks-1 do 
+        rectfill(header_breaks[i]+2,1,header_breaks[i+1],11,gcolors.header)
+    end
+    rectfill(header_breaks[#header_breaks]+2,1,126,11,gcolors.header)
+    --names = {'John', 'Joe', 'Steve'}
+    --for name_count = 1,#names do
+    --    print (names[name_count])
+    --end
 end
 -->8
 -- page 3 (config)
@@ -273,7 +283,7 @@ buffer = {spx = 5*8, spy = 10*8, bx = 5, by = 10, rotspx = 9*8, rotspy = 10*8}
 cam = {shake=0}
 gcolors = {
     header = 8,
-    header_shadow = 5,
+    header_shadow = 2,
 }
 
 -->8
