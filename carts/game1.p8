@@ -196,7 +196,8 @@ draw_header = function()
     -- label 1
     print("LVL",3,3,gcolors.header_text)
     rectfill(3,9,13,9,gcolors.header_text)
-    print_shadow(glevel,header_breaks[1]-5,4,gcolors.header_text)
+    rectfill(3,11,20,11,gcolors.header_text)
+    print_shadow(glevel+2,header_breaks[1]-5,4,gcolors.header_text)
     -- control label
     print("how",header_breaks[1]+3,2,gcolors.header_text)
     print("to",header_breaks[1]+17,2,gcolors.header_text)
@@ -211,9 +212,10 @@ draw_header = function()
     spr(237,header_breaks[3]+12,2) -- x
     -- check sol and reset
     print("finish\nreset",header_breaks[4]+3,2)
-    spr(253,120,2)
-    rectfill(114,9,125,11,15)
-    rectfill(115,10,124,10,14)
+    spr(253,119,2)
+    rectfill(114,9,125,11,gcolors.header_text)
+    rectfill(115,10,124,10,10)
+    rectfill(118,10,124,10,gcolors.header_shadow)
 end
 print_shadow = function(text,x,y,color) 
     print(text,x+1,y,0)
