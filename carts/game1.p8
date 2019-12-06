@@ -104,7 +104,7 @@ end
 
 function _draw()
     debug_print(config.DEBUG)
-    if (gstate == "title") then
+    if (gstate == "title" or gstate == "title_anim") then
         cls(config.title_bgcolor)
         draw_title()
     else 
@@ -146,14 +146,20 @@ end
 
 draw_title = function()
     -- draw title
-    
     map(gmap.title.x,gmap.title.y,0,0,16,16)
     spr(10,38,32,6,4)
-    -- start button
-    print("press ❎ to start", 29, 80, 4)
+    if (gstate == "title") then 
+        print("press ❎ to start", 29, 80, 4)
+    else 
+        --pl.x = pl.x+1
+        --pl.frame = next_pl_walk()
+        draw_player()
+        --pl_animtimer_incr()
+    end
 end
 draw_intro = function() 
     map(gmap.intro.x,gmap.intro.y,0,0,16,16)
+    draw_player()
 end
 
 draw_level = function()
@@ -237,8 +243,8 @@ gmap = {
     [4] = {x = 80, y = 0},
 }
 pl = {
-    x = 30,
-    y = 30,
+    x = -16,
+    y = 104,
     dx = 0,
     dy = 0,
     ddx = 0,
@@ -290,16 +296,26 @@ cam = {shake=0}
 title_check = function()
     if (gstate == "title") then
         if (bnp('z') or bnp('x')) then
+            gstate = "title_anim"
+        end
+    end 
+    if (gstate == "title_anim") then 
+        pl_update_walk()
+        if (pl.x > 130 and pl.x < 140) then 
             gstate = "intro"
-            --glevel = 1
-            --play_bridge() -- for now
+            pl.x = -10
         end
     end
 end
 intro_check = function()
-    -- If buttons are pressed, go to levels
-    intro_timer = intro_timer + 1
     if (gstate == "intro") then 
+        intro_timer = intro_timer + 1
+
+        if (intro_timer < 20) then 
+            pl_update_walk()
+        else if (intro_timer == 21) then 
+            pl.frame = 'rest'
+        end end 
         if ((btn(4) or btn(5)) and intro_timer > 100) then
             gstate = "move"
             glevel = 1
@@ -656,6 +672,11 @@ move_player = function()
     end
     -- NO JUMPING CURRENTLY!
     pl.frame = "rest"
+end
+pl_update_walk = function()
+    pl.x = pl.x+1
+    pl.frame = next_pl_walk()
+    pl_animtimer_incr()
 end
 pl_animtimer_incr = function()
     pl.animtimer = (pl.animtimer + 1)%(pl.animlength)
