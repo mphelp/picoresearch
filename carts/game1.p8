@@ -202,6 +202,7 @@ draw_intro = function()
     draw_player()
     draw_worm()
     print(intro_timer)
+    print(worm.story)
     draw_speech()
 end
 
@@ -258,6 +259,9 @@ draw_speech = function()
         local text = storyline[worm.story]
         printc(text,sub(text,1,worm.speech_frame),8*ul.x+6,8*ul.y+6)
         worm.speech_frame+=1
+        if (worm.speech_frame > #text + 20) then -- show continue
+            print('❎',8*br.x-5,8*br.y-3,5)
+        end
     end
 end
 draw_hammer = function()
@@ -366,6 +370,8 @@ worm = {
     story = 0,
     speech_shadow = 5,
     speech_frame = 0,
+    continue = false, -- x button to continue listening
+    speech_intervals = {80,500,800}
 }
 curs = {
 	sx = 80, -- pixel on screen
@@ -417,19 +423,30 @@ intro_check = function()
 
         if (intro_timer < 20) then 
             pl_update_walk()
-        else if (btw(intro_timer,20,30)) then 
+        end
+        if (btw(intro_timer,20,30)) then 
             pl.frame = 'rest'
-        else 
+        end
+        if (intro_timer > 30 or worm.story == 1) then 
             -- Speech
             worm.speech = true
             worm_update_inch()
-            if (intro_timer == 80 or intro_timer == 300) then 
-                worm.speech_frame = 0
-                worm.story = worm.story + 1
+            if (intro_timer == worm.speech_intervals[worm.story+1]) then 
+                worm.story += 1
             end 
-        end end 
+            --if (intro_timer == 80 or intro_timer == 500) then 
+            --    worm.speech_frame = 0
+            --    worm.story+= 1
+            --end 
+        end 
         -- level
-        if ((bnp('z') or bnp('x')) or intro_timer > 3000) then
+        --if ((bnp('z') or bnp('x')) or intro_timer > 3000) then
+        if (bnp('z') or bnp('x')) then
+            worm.story += 1 
+            worm.speech_frame = 0
+            intro_timer = worm.speech_intervals[worm.story] 
+        end -- advance/continue dialogue
+        if (intro_timer > 1000) then 
             gstate = "move"
             glevel = 1
             --glevel = 1
@@ -970,8 +987,8 @@ __gfx__
 00fff00000fff00000fff00000fff00000000000000000000000000000000000000000000000000000000000000000000000000044944444cccccccccccccccc
 00eff00000eff00000eff0000feff00000000000000000000000000000000000000000000000000000000000000000000000000044444444cccccccccccccccc
 00eea0000feea0000feea00000eea00000000000000000000000000000000000000000000000000000000000000000000000000044444444ccccc3cccccccccc
-00fee00000eee50005eee00005eee50000000000000000000000000000000000000000000000000000000000000000000000000044449444ccccc3cccccccccc
-0050500000500000000050000000000000000000000000000000000000000000000000000000000000000000000000000000000044444444c3ccc3ccc3ccccc3
+00fee00000eeed000deee0000deeed0000000000000000000000000000000000000000000000000000000000000000000000000044449444ccccc3cccccccccc
+00d0d00000d000000000d0000000000000000000000000000000000000000000000000000000000000000000000000000000000044444444c3ccc3ccc3ccccc3
 66666666077777700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000444444443333333333333333
 66666666776666670600006000000000000000000000000000000000000000000000000000000000000000000000000000000000449444443333333333333333
 66666666766161660060060000000000000000000000000000000000000000000000000000000000000000000000000000000000444444443339333333333393
