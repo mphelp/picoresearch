@@ -7,9 +7,7 @@ __lua__
 -- page 1
 
 -- the storyline
-local textCol   = 5
-local accentCol = 9
--- 1 blue, 9 orange
+
 local storyline = {
     [0] = " ",
     [1] = "^5hi ^9lario!^l ^5good to see you!^l^lfunny running into you^loutisde the lushroom ^lkingdom.^l^lhey, i have a favor^lto ask...",
@@ -107,7 +105,7 @@ end
 handle_state_transitions = function()
     if (gstate == "title" or gstate == "title_anim") then 
         title_check()
-    else if (gstate == "intro") then 
+    else if (gstate == "intro" or gstate == "intro_anim") then 
         intro_check()
     else 
         hammer_check()
@@ -157,7 +155,7 @@ function _draw()
         cls(config.title_bgcolor)
         draw_title()
     else 
-        if (gstate == "intro") then 
+        if (gstate == "intro" or gstate == "intro_anim") then 
             cls(config.title_bgcolor)
             draw_intro()
         else 
@@ -207,9 +205,12 @@ draw_intro = function()
     map(gmap.intro.x,gmap.intro.y,0,0,16,16)
     draw_player()
     draw_worm()
+       
+    print(gstate)
     print(intro_timer)
     print(worm.story)
-    draw_speech()
+ draw_speech()
+
 end
 
 draw_level = function()
@@ -256,24 +257,26 @@ draw_speech_helper = function(ul,br,xoff,yoff,pal_c)
 end
 draw_speech = function()
     -- bubble
-    local ul = {x = 1,y=1}
-    local br = {x = ul.x+13,y=ul.y+8}
-    draw_speech_helper(ul,br,3,2,true) -- shadow
-    draw_speech_helper(ul,br,0,0,false)
-    -- story
-    if (worm.story > 0) then 
-        local text = storyline[worm.story]
-        printc(text,sub(text,1,worm.speech_frame),8*ul.x+6,8*ul.y+6)
-        worm.speech_frame+=1
-        if (worm.speech_frame < #text) then -- worm talking 
-            local r = rnd(80)
-            if (btw(r,1,4)) then sfx(39) end
-            if (btw(r,5,8)) then sfx(38) end
-            if (btw(r,9,12)) then sfx(37) end 
-            if (btw(r,13,16)) then sfx(40) end
-        end 
-        if (worm.speech_frame > #text + 20) then -- show continue
-            print('❎',8*br.x-5,8*br.y-3,5)
+    if (worm.speech) then 
+        local ul = {x = 1,y=1}
+        local br = {x = ul.x+13,y=ul.y+8}
+        draw_speech_helper(ul,br,3,2,true) -- shadow
+        draw_speech_helper(ul,br,0,0,false)
+        -- story
+        if (worm.story > 0) then 
+            local text = storyline[worm.story]
+            printc(text,sub(text,1,worm.speech_frame),8*ul.x+6,8*ul.y+6)
+            worm.speech_frame+=1
+            if (worm.speech_frame < #text) then -- worm talking 
+                local r = rnd(80)
+                if (btw(r,1,4)) then sfx(39) end
+                if (btw(r,5,8)) then sfx(38) end
+                if (btw(r,9,12)) then sfx(37) end 
+                if (btw(r,13,16)) then sfx(40) end
+            end 
+            if (worm.speech_frame > #text + 20) then -- show continue
+                print('❎',8*br.x-5,8*br.y-3,5)
+            end
         end
     end
 end
@@ -384,7 +387,7 @@ worm = {
     speech_shadow = 5,
     speech_frame = 0,
     continue = false, -- x button to continue listening
-    speech_intervals = {65,500,800,1400,1700,2000,2300,2600}
+    speech_intervals = {65,500,800,1400,1700,2000,2300,2600,2730}
 }
 curs = {
 	sx = 80, -- pixel on screen
@@ -421,24 +424,24 @@ title_check = function()
         if (bnp('z') or bnp('x')) then
             gstate = "title_anim"
         end
-    else if (gstate == "title_anim") then 
-        pl_update_walk()
+    else 
+        pl_update_walk(1)
         if ((bnp('z') or bnp('x')) or (pl.x > 130 and pl.x < 140)) then 
             gstate = "intro"
             pl.x = -10
         end
     end
-    end
 end
 intro_check = function()
+    intro_timer = intro_timer + 1
     if (gstate == "intro") then 
-        intro_timer = intro_timer + 1
+
         intro_timer_static = intro_timer_static + 1
 
-        if (intro_timer_static < 20) then 
-            pl_update_walk()
+        if (intro_timer_static < 28) then 
+            pl_update_walk(1)
         end
-        if (btw(intro_timer_static,20,30)) then 
+        if (btw(intro_timer_static,28,30)) then 
             pl.frame = 'rest'
         end
         if (intro_timer > 30 or worm.story == 1) then 
@@ -455,10 +458,17 @@ intro_check = function()
             worm.speech_frame = 0
             intro_timer = worm.speech_intervals[worm.story] 
         end -- advance/continue dialogue
-        if (intro_timer == worm.speech_intervals[#worm.speech_intervals]) then 
+        if (intro_timer == worm.speech_intervals[#worm.speech_intervals-1]) then 
+            worm.speech = false
+            gstate = "intro_anim"
+        end
+    else --anim
+        worm.x -= 1
+        worm_update_inch()
+        pl_update_walk(1)
+        if (intro_timer == worm.speech_intervals[#worm.speech_intervals]) then  
             gstate = "move"
             glevel = 1
-            --glevel = 1
             play_bridge() -- for now
         end
     end
@@ -816,8 +826,8 @@ worm_update_inch = function()
     worm.frame = next_worm_inch()
     worm_animtimer_incr()
 end 
-pl_update_walk = function()
-    pl.x = pl.x+1
+pl_update_walk = function(speed)
+    pl.x = pl.x+speed
     pl.frame = next_pl_walk()
     pl_animtimer_incr()
 end
