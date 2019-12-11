@@ -76,6 +76,7 @@ qtr_turns = function()
 end
 -- debug
 local debug_string=""
+local debug_string2=""
 local soln_string = ""
 local target_string = ""
 debug_print = function(DEBUG)
@@ -102,7 +103,7 @@ function _init()
     gstate = "title"
 end
 
-handle_state_transitions = function()
+handle_beginning_transitions = function()
     if (gstate == "title" or gstate == "title_anim") then 
         title_check()
     else if (gstate == "intro" or gstate == "intro_anim") then 
@@ -134,10 +135,11 @@ handle_global_effects = function()
     shake_camera()
 end
 function _update()
-    handle_state_transitions()
+    handle_beginning_transitions()
     handle_level_transitions()
     handle_global_effects()
     if (gstate == "curs") then
+        curs_check()
         move_cursor()
     elseif (gstate == "beginzoom") then
         begin_zoom()
@@ -173,12 +175,19 @@ function _draw()
         else 
             cls(config.bgcolor)
             --draw_floor()
-            draw_wall()
+            --draw_wall()
             draw_level()
             --draw_hammer()
             draw_player()
             --draw_border()
             draw_header()
+            if (config.DEBUG_2) then 
+                print(pl.frame,0,20)
+                print(pl.animtimer,0,30)
+                print(debug_string2)
+                print(gstate)
+            end 
+            debug_string2 = ""
             if (gstate != "move") then
                 cursor(0,20)
                 print(debug_string)
@@ -587,6 +596,7 @@ intro_check = function()
         if (intro_timer == worm.speech_intervals[#worm.speech_intervals]) then  
             gstate = "move"
             glevel = 1
+            pl.x = -10
             play_bridge() -- for now
             pl.x = -10
         end
@@ -1012,7 +1022,9 @@ worm_update_inch = function()
 end 
 pl_update_walk = function(speed)
     pl.x = pl.x+speed
+    debug_string2 = debug_string2.. "\nbefore "..pl.frame
     pl.frame = next_pl_walk()
+    debug_string2 = debug_string2.. "\nafter "..pl.frame
     pl_animtimer_incr()
 end
 worm_animtimer_incr = function()
@@ -1022,6 +1034,7 @@ pl_animtimer_incr = function()
     pl.animtimer = (pl.animtimer + 1)%(pl.animlength)
 end
 next_pl_walk = function()
+    debug_string2 = debug_string2.. "\nin function pl walk"
     if (pl.animtimer >= pl.animlength/2) then
         return "walk1";
     else 
@@ -1308,7 +1321,7 @@ __sfx__
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0110000016050190501e0502555025540255302552025520255250000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0110000016030190301e0302554025530255202551025510255150000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 010e0000151501515014150151501515014150171501505015150151501515015150151501b1501715015050151501515015150151501515014150171501505015150151501515015150151501b1501715015050
 010e00001015010150101501015010150121501715010050101501015010150101501015012150171501005010150101501015010150101501b150171501005010150101501015010150101501a1501715010050
 001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
