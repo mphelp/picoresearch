@@ -108,6 +108,7 @@ handle_state_transitions = function()
     else if (gstate == "intro" or gstate == "intro_anim") then 
         intro_check()
     else 
+        animate_heater_cooler()
         hammer_check()
         curs_check()
     end end 
@@ -404,7 +405,9 @@ gsprites = {
     placable = 202,
     source_heater = { [0] = 40,[1] = 8,[2] = 24 },
     target_heater = { [0] = 41,[1] = 9,[2] = 25 },
-    source_cooler = { [0] = 3, [1] = 3,[2] = 3,[3] = 3, [4] = 3, [5] = 4,[6] = 5,[7] = 6,[8] = 7},
+    source_cooler = { [0] = 3, [1] = 3,[2] = 3,[3] = 3,
+        [4] = 3,[5] = 3,[6] = 3,[7] = 3,[8] = 3, [9] = 3,[10] = 3,[11] = 3, 
+        [12] = 4,[13] = 5,[14] = 6,[15] = 7},
     target_cooler = { [0] = 2 }
 }
 gmap = {
@@ -489,6 +492,10 @@ gcolors = {
     header_text = 6,
     header_text2 = 7
 }
+heater_cooler = {
+    h = { animlength = 3, i = 0},
+    c = { animlength = 16, i = 0}
+}
 
 -->8
 -- page 4 (updating)
@@ -551,6 +558,18 @@ intro_check = function()
             glevel = 1
             play_bridge() -- for now
         end
+    end
+end
+animate_heater_cooler = function()
+    heater_cooler.h.i = (heater_cooler.h.i + 1/4)%heater_cooler.h.animlength
+    heater_cooler.c.i = (heater_cooler.c.i + 0.2)%heater_cooler.c.animlength
+    if (gst[glevel].r.s != nil) then -- red source heater
+        local i = flr(heater_cooler.h.i)
+        mset(gst[glevel].r.s.x,gst[glevel].r.s.y,gsprites.source_heater[i])
+    end 
+    if (gst[glevel].g.s != nil) then -- green source heater
+        local i = flr(heater_cooler.c.i)
+        mset(gst[glevel].g.s.x,gst[glevel].g.s.y,gsprites.source_cooler[i])
     end
 end
 hammer_check = function()
