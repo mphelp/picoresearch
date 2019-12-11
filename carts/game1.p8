@@ -453,7 +453,7 @@ pl = {
     animtimer = 0,
     animlength = 6,
     frame = 'rest',
-    jump_acc = 1,
+    jump_acc = .5,
     jump_speed = 0,
     jump_yet = false,
     jump_count = 0,
@@ -607,21 +607,22 @@ end
 jump_anim_check = function () 
     if (gstate == "jump_anim") then 
         if (pl.jump_count == 4) then 
+            pl.jump_yet = false
             gstate = "move_anim"
+            pl.jump_count = 0
         else 
             if (not pl.jump_yet) then
-                pl.jump_speed = -6  
+                pl.jump_speed = -4
                 pl.jump_yet = true
                 pl.jump_count += 1
                 pl.frame = 'jump'
             else 
                 pl.jump_speed += pl.jump_acc
                 pl.y += pl.jump_speed
-                if (pl.y >= 13*8) then 
+                if (pl.y >= (13*8)-3) then 
                     pl.y = 13*8
                     pl.frame = 'rest'
                     pl.jump_yet = false
-                    --gstate = "move_anim" 
                 end
             end
         end
