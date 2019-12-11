@@ -695,7 +695,7 @@ curs_check = function()
 end
 curs_on_pipe = function()
     pipe_located = false
-    for i=curs.mapx , curs.mapx + curs.mode - 1 do 
+    for i=curs.mapx , curs.mapx + curs.mode - 1 do -- MUST BE ONE PIPE
         for j=curs.mapy , curs.mapy + curs.mode - 1 do 
             pipe_located = pipe_located or is_pipe_spr(mget(i,j))
         end 
@@ -978,13 +978,13 @@ rotate_animate = function()
     end
 end
 move_cursor = function()
-	if(btnp(0)) then 
+	if(btnp(0) and btw(curs.bx,4,13-curs.mode)) then 
 		curs.bx -= 1
-	elseif(btnp(1)) then 
+	elseif(btnp(1) and btw(curs.bx,3,12-curs.mode)) then 
 		curs.bx += 1
-	elseif(btnp(2)) then 
+	elseif(btnp(2) and btw(curs.by,5,12-curs.mode)) then 
 		curs.by -= 1
-	elseif(btnp(3)) then 
+	elseif(btnp(3) and btw(curs.by,4,11-curs.mode)) then 
 		curs.by += 1
 	end
     -- screen
