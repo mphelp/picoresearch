@@ -402,6 +402,10 @@ gsprites = {
     speech_edge_top = 230,
     speech_edge_side = 246,
     placable = 202,
+    source_heater = { [0] = 40,[1] = 8,[2] = 24 },
+    target_heater = { [0] = 41,[1] = 9,[2] = 25 },
+    source_cooler = { [0] = 3, [1] = 3,[2] = 3,[3] = 3, [4] = 3, [5] = 4,[6] = 5,[7] = 6,[8] = 7},
+    target_cooler = { [0] = 2 }
 }
 gmap = {
     border = {x = 112, y = 0},
