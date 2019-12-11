@@ -110,6 +110,7 @@ handle_state_transitions = function()
     else 
         animate_heater_cooler()
         move_check()
+        jump_anim_check()
         move_anim_check()
         curs_check()
     end end 
@@ -122,7 +123,7 @@ handle_level_transitions = function()
     if (gstate == "curs" and curs.didrotate 
         and is_solution_red() and is_solution_green() 
         and bnp('z')) then
-            gstate = "move_anim"
+            gstate = "jump_anim"
             --soln_string = "VALID SOLUTION!" 
             play_solution()
             --music(16, 0, 12)
@@ -156,6 +157,7 @@ function _update()
         --move_player()
         --pl_animtimer_incr()
         -- This is handled now in state trans
+    elseif (gstate == "jump_anim") then 
     end
 end
 
@@ -181,7 +183,7 @@ function _draw()
                 print(debug_string)
                 print(target_string)
                 print(soln_string)
-                if (gstate == "curs" or gstate == "move_anim") then
+                if (gstate == "curs" or gstate == "move_anim" or gstate == "jump_anim") then
                     draw_curs()
                 else
                     transform_and_display_buffer()
@@ -450,7 +452,11 @@ pl = {
     resting = true,
     animtimer = 0,
     animlength = 6,
-    frame = 'rest'
+    frame = 'rest',
+    jump_acc = 1,
+    jump_speed = 0,
+    jump_yet = false,
+    jump_count = 0,
 }
 worm = {
     x = 30, 
@@ -597,6 +603,29 @@ move_check = function()
        --     gstate = "curs"
       --  end
     --end
+end
+jump_anim_check = function () 
+    if (gstate == "jump_anim") then 
+        if (pl.jump_count == 4) then 
+            gstate = "move_anim"
+        else 
+            if (not pl.jump_yet) then
+                pl.jump_speed = -6  
+                pl.jump_yet = true
+                pl.jump_count += 1
+                pl.frame = 'jump'
+            else 
+                pl.jump_speed += pl.jump_acc
+                pl.y += pl.jump_speed
+                if (pl.y >= 13*8) then 
+                    pl.y = 13*8
+                    pl.frame = 'rest'
+                    pl.jump_yet = false
+                    --gstate = "move_anim" 
+                end
+            end
+        end
+    end 
 end
 move_anim_check = function ()
     if (gstate == "move_anim") then 
