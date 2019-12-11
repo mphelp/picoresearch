@@ -76,6 +76,7 @@ qtr_turns = function()
 end
 -- debug
 local debug_string=""
+local debug_string2=""
 local soln_string = ""
 local target_string = ""
 debug_print = function(DEBUG)
@@ -102,20 +103,21 @@ function _init()
     gstate = "title"
 end
 
-handle_state_transitions = function()
+handle_beginning_transitions = function()
     if (gstate == "title" or gstate == "title_anim") then 
         title_check()
     else if (gstate == "intro" or gstate == "intro_anim") then 
         intro_check()
     else 
         animate_heater_cooler()
-        hammer_check()
-        curs_check()
     end end 
+end
+is_full_solution = function() 
+    return curs.didrotate and is_solution_red() and is_solution_green()
 end
 handle_level_transitions = function()
     soln_string = ""
-    if (curs.didrotate and is_solution_red() and is_solution_green()) then
+    if (is_full_solution()) then
             soln_string = "VALID SOLUTION!" 
             play_solution()
             --music(16, 0, 12)
@@ -126,10 +128,11 @@ handle_global_effects = function()
     shake_camera()
 end
 function _update()
-    handle_state_transitions()
+    handle_beginning_transitions()
     handle_level_transitions()
     handle_global_effects()
     if (gstate == "curs") then
+        curs_check()
         move_cursor()
     elseif (gstate == "beginzoom") then
         begin_zoom()
@@ -144,9 +147,9 @@ function _update()
     elseif (gstate == "rotate") then
         rotate_animate()
     elseif (gstate == "move") then
-        move_player()
-
-        pl_animtimer_incr()
+        --move_player()
+        --pl_animtimer_incr()
+        move_check()
     end
 end
 
@@ -162,16 +165,23 @@ function _draw()
         else 
             cls(config.bgcolor)
             --draw_floor()
-            draw_wall()
+            --draw_wall()
             draw_level()
             --draw_hammer()
             draw_player()
             --draw_border()
             draw_header()
+            if (config.DEBUG_2) then 
+                print(pl.frame,0,20)
+                print(pl.animtimer,0,30)
+                print(debug_string2)
+                print(gstate)
+            end 
+            debug_string2 = ""
             if (gstate != "move") then
-                print(debug_string)
-                print(target_string)
-                print(soln_string)
+                --print(debug_string)
+                --print(target_string)
+                --print(soln_string)
                 if (gstate == "curs") then
                     draw_curs()
                 else
@@ -369,6 +379,7 @@ config = {
     SHOW_SOLN = true,
     DEBUG_INTRO = false,
     SKIPTOLEVEL1 = true,
+    DEBUG_2 = true
 }
 -- g means global
 gst = {
@@ -556,6 +567,7 @@ intro_check = function()
         if (intro_timer == worm.speech_intervals[#worm.speech_intervals]) then  
             gstate = "move"
             glevel = 1
+            pl.x = -10
             play_bridge() -- for now
         end
     end
@@ -572,14 +584,22 @@ animate_heater_cooler = function()
         mset(gst[glevel].g.s.x,gst[glevel].g.s.y,gsprites.source_cooler[i])
     end
 end
-hammer_check = function()
-    if (pl.x > 48 and pl.x < 80 and btnp(5)) then
-        if (gstate == "curs") then
-            gstate = "move"
-        elseif (gstate == "move") then
+move_check = function()
+    if (gstate == "move") then 
+        if (pl.x < 20) and not is_full_solution() then 
+            pl_update_walk(1)
+        else if (pl.x >= 20) and not is_full_solution() then 
+            pl.frame = 'rest'
             gstate = "curs"
-        end
-    end
+        end end 
+    end 
+    --if (pl.x > 48 and pl.x < 80 and btnp(5)) then
+    --    if (gstate == "curs") then
+    --        gstate = "move"
+    --    elseif (gstate == "move") then
+    --        gstate = "curs"
+    --    end
+    --end
 end
 curs_check = function()
     if (gstate == "curs" and bnp('z') and curs_on_pipe()) then
@@ -927,7 +947,9 @@ worm_update_inch = function()
 end 
 pl_update_walk = function(speed)
     pl.x = pl.x+speed
+    debug_string2 = debug_string2.. "\nbefore "..pl.frame
     pl.frame = next_pl_walk()
+    debug_string2 = debug_string2.. "\nafter "..pl.frame
     pl_animtimer_incr()
 end
 worm_animtimer_incr = function()
@@ -937,6 +959,7 @@ pl_animtimer_incr = function()
     pl.animtimer = (pl.animtimer + 1)%(pl.animlength)
 end
 next_pl_walk = function()
+    debug_string2 = debug_string2.. "\nin function pl walk"
     if (pl.animtimer >= pl.animlength/2) then
         return "walk1";
     else 
