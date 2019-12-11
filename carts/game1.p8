@@ -109,9 +109,12 @@ handle_state_transitions = function()
         intro_check()
     else 
         animate_heater_cooler()
-        hammer_check()
+        move_check()
         curs_check()
     end end 
+end
+is_full_solution = function () 
+    return is_solution_red() and is_solution_green() and curs.didrotate
 end
 handle_level_transitions = function()
     soln_string = ""
@@ -144,9 +147,9 @@ function _update()
     elseif (gstate == "rotate") then
         rotate_animate()
     elseif (gstate == "move") then
-        move_player()
+        --move_player()
 
-        pl_animtimer_incr()
+        --pl_animtimer_incr()
     end
 end
 
@@ -572,14 +575,22 @@ animate_heater_cooler = function()
         mset(gst[glevel].g.s.x,gst[glevel].g.s.y,gsprites.source_cooler[i])
     end
 end
-hammer_check = function()
-    if (pl.x > 48 and pl.x < 80 and btnp(5)) then
-        if (gstate == "curs") then
-            gstate = "move"
-        elseif (gstate == "move") then
+move_check = function()
+    if (gstate == "move") then 
+        if (pl.x < 20) and not is_full_solution() then 
+            pl_update_walk(1)
+        else if (pl.x >= 20) and not is_full_solution() then 
+            pl.frame = 'rest'
             gstate = "curs"
-        end
+        end end 
     end
+    --if (pl.x > 48 and pl.x < 80 and btnp(5)) then
+      --  if (gstate == "curs") then
+      --      gstate = "move"
+      --  elseif (gstate == "move") then
+       --     gstate = "curs"
+      --  end
+    --end
 end
 curs_check = function()
     if (gstate == "curs" and bnp('z') and curs_on_pipe()) then

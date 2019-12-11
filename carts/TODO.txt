@@ -1,5 +1,0 @@
-TODO
-======
-- only rotable regions should include empty or pipe in that map region (problem for 2x2,3x3)
-- header
-- reset functionality (after header)
