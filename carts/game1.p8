@@ -110,6 +110,7 @@ handle_state_transitions = function()
     else 
         animate_heater_cooler()
         move_check()
+        move_anim_check()
         curs_check()
     end end 
 end
@@ -118,11 +119,14 @@ is_full_solution = function ()
 end
 handle_level_transitions = function()
     soln_string = ""
-    if (curs.didrotate and is_solution_red() and is_solution_green()) then
-            soln_string = "VALID SOLUTION!" 
+    if (gstate == "curs" and curs.didrotate 
+        and is_solution_red() and is_solution_green() 
+        and bnp('z')) then
+            gstate = "move_anim"
+            --soln_string = "VALID SOLUTION!" 
             play_solution()
             --music(16, 0, 12)
-            glevel = glevel + 1
+            --glevel = glevel + 1
     end
 end
 handle_global_effects = function()
@@ -146,10 +150,12 @@ function _update()
         zoom_out_animate()
     elseif (gstate == "rotate") then
         rotate_animate()
-    elseif (gstate == "move") then
-        --move_player()
+    elseif (gstate == "move") then 
 
+    elseif (gstate == "move_anim") then 
+        --move_player()
         --pl_animtimer_incr()
+        -- This is handled now in state trans
     end
 end
 
@@ -175,7 +181,7 @@ function _draw()
                 print(debug_string)
                 print(target_string)
                 print(soln_string)
-                if (gstate == "curs") then
+                if (gstate == "curs" or gstate == "move_anim") then
                     draw_curs()
                 else
                     transform_and_display_buffer()
@@ -552,7 +558,7 @@ intro_check = function()
             worm.speech = false
             gstate = "intro_anim"
         end
-    else --intro_anim
+    elseif (gstate == "intro_anim") then --intro_anim
         worm.x -= 1
         worm_update_inch()
         pl_update_walk(1)
@@ -592,8 +598,18 @@ move_check = function()
       --  end
     --end
 end
+move_anim_check = function ()
+    if (gstate == "move_anim") then 
+        pl_update_walk(1)
+        if (pl.x > 130) then 
+            glevel += 1
+            gstate = "move"
+            pl.x = -10
+        end 
+    end 
+end 
 curs_check = function()
-    if (gstate == "curs" and bnp('z') and curs_on_pipe()) then
+    if (gstate == "curs" and bnp('x') and curs_on_pipe()) then
         gstate = "beginzoom"
     elseif(gstate == "beginzoom") then
         gstate = "zoomin"
@@ -603,7 +619,7 @@ curs_check = function()
         gstate = "rotate"
     elseif (gstate == "rotate" and curs.rotateDone) then
         gstate = "zoomed"
-    elseif (gstate == "zoomed" and bnp('z')) then
+    elseif (gstate == "zoomed" and bnp('x')) then
         gstate = "zoomout"
     elseif (gstate == "zoomout" and curs.zoomOutDone) then
         gstate = "endzoom"
@@ -1053,7 +1069,7 @@ end
 -->8
 -- page (8) MUSIC
 play_bridge = function()
-    music(10,200) -- channels 1-3, 0 is sfx
+    music(10) -- channels 1-3, 0 is sfx
 end
 play_solution = function() 
     sfx(35)
@@ -1283,7 +1299,7 @@ __music__
 00 41424344
 00 41424344
 00 41424344
-01 282a432c
+01 682a432c
 02 292b432c
 00 41424344
 00 41424344
