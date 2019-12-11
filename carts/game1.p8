@@ -377,10 +377,10 @@ config = {
 	bgcolor = 0,
     title_bgcolor = 0,
     DEBUG = false,
-    DEBUG_SOLN = true,
-    SHOW_SOLN = true,
+    DEBUG_SOLN = false,
+    SHOW_SOLN = false,
     DEBUG_INTRO = false,
-    SKIPTOLEVEL1 = true,
+    SKIPTOLEVEL1 = false,
 }
 -- g means global
 gst = {
@@ -483,7 +483,7 @@ curs = {
 	by = 5,
     mapx = 0, -- map block position of cursor
     mapy = 0, 
-	mode = 2, -- mode x mode grid
+	mode = 1, -- mode x mode grid
 	col = 6,
     zoomInDone = false,
     zoomOutDone = false,
@@ -571,8 +571,9 @@ intro_check = function()
         pl_update_walk(1)
         if (intro_timer == worm.speech_intervals[#worm.speech_intervals]) then  
             gstate = "move"
-            glevel = 3
+            glevel = 1
             play_bridge() -- for now
+            pl.x = -10
         end
     end
 end
@@ -583,7 +584,7 @@ animate_heater_cooler = function()
         local i = flr(heater_cooler.h.i)
         mset(gst[glevel].r.s.x,gst[glevel].r.s.y,gsprites.source_heater[i])
     end 
-    if (gst[glevel].g.s != nil) then -- green source heater
+    if (gst[glevel].g.s != nil) then -- green source cooler
         local i = flr(heater_cooler.c.i)
         mset(gst[glevel].g.s.x,gst[glevel].g.s.y,gsprites.source_cooler[i])
     end
@@ -592,9 +593,8 @@ animate_heater_cooler = function()
             local i = flr(heater_cooler.h.i)
             mset(gst[glevel].r.t.x,gst[glevel].r.t.y,gsprites.target_heater[i])
         end 
-        if (gst[glevel].g.t != nil) then -- green target heater
-            local i = flr(heater_cooler.c.i)
-            mset(gst[glevel].g.t.x,gst[glevel].g.t.y,gsprites.target_cooler[i])
+        if (gst[glevel].g.t != nil) then -- green target cooler
+            mset(gst[glevel].g.t.x,gst[glevel].g.t.y,gsprites.target_cooler[0])
         end 
     end
 end
@@ -821,7 +821,7 @@ is_solution_red = function()
             -- move x and y
             x += x_from_sol_dir(sol_dir)
             y += y_from_sol_dir(sol_dir)
-            if (config.DEBUG_SOLN) debug_string = debug_string .."next xy: "..x..","..y.."\n"
+            --if (config.DEBUG_SOLN) debug_string = debug_string .."next xy: "..x..","..y.."\n"
         end
     end
     return true
@@ -833,7 +833,7 @@ is_solution_green = function()
         return true
     end 
     local x, y = gst[glevel].g.s.x+1, gst[glevel].g.s.y 
-    debug_string = debug_string .. "\nx is "..x.."\n"
+    --debug_string = debug_string .. "\nx is "..x.."\n"
     -- red: 1 right side, 2 bottom side, 4 left side, 8 top side
     -- green: 16, 32, 64, 128 (unfinished)
     sol_dir = 2 -- left side
@@ -867,7 +867,7 @@ is_solution_green = function()
             -- move x and y
             x += x_from_sol_dir(sol_dir)
             y += y_from_sol_dir(sol_dir)
-            if (config.DEBUG_SOLN) debug_string = debug_string .."next xy: "..x..","..y.."\n"
+            --if (config.DEBUG_SOLN) debug_string = debug_string .."next xy: "..x..","..y.."\n"
         end
     end
     return true
@@ -1250,7 +1250,7 @@ bbb2888888882bbb888882bbbb28888888888888bb2882bb22292222229999221610000116100001
 22222222111100000011101111100000222222220000000077777776222222221dd1122111111111111111110000000000000000000000000000000000000000
 2222222200010000000000010000000022222222000000007777777622222222dddd222211111111111111110000000000000000000000000000000000000000
 __gff__
-000000000000000000000000000000000903060c0f0f050a000000000000000090909090f0f050500000000000000000693c96c3a55a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000010101
+000000000000000000000000000000000903060c0f0f050a0000000000000000903060c0f0f050a00000000000000000693c96c3a55a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000010101
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 0000d3000000000000d1000000d300000000000000f2d500000000000000000000000000e2d50000d3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000048484848484848484848484848484848
