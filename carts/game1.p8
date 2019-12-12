@@ -13,10 +13,22 @@ local storyline = {
     [1] = "^5hi ^9lario!^l ^5good to see you!^l^lfunny running into you^loutisde the lushroom ^lkingdom.^l^lhey, i have a favor^lto ask...",
     [2] = "^5i tried talking your^lbrothers into fixing this ^lhere basement.^l^lsimple task, but oh so^lconveniently their^l^eprincess^5 needed saving^lagain.^l^ltypical...",
     [3] = "^5but then i thought of^lyou, the^8 real^5 plumber.^l^lall i need is a patch job^lfor some burst pipes. ^lit's kind of a mess down^lhere but i know you're^lthe best in the business.^l^lyou up for the job? ^3\140^5",
-    [4] = "^5fantastic! here's a^lscrewdriver for your^ltoolset. ^l^lin case you've somehow^lforgotten how to fix^lpipes as a plumber...^l^l...let me remind you:",
+    [4] = "^5fantastic! here's a^l^cscrewdriver^5 for your^ltoolset. ^l^lin case you've somehow^lforgotten how to fix^lpipes as a plumber...^l^l...let me remind you:",
     [5] = "^5move tool: \139 \145 \148 \131^l^lextract pipes: ^l  press \151 to extract, ^l  \139 \145 to rotate, ^l  \151 to place pipes back ^l^lcheck solution: press c^l^lreset: hold c",
     [6] = "^5if you didn't catch^lall that, i've^lleft you a manual^lat the top of your^lscreen for reference.",
     [7] = "^5thanks again ^9lario!^5^l^li can always count on you.^l^lman, you really are the^lbest brother. ^4the other ^ltwo should've stuck to ^ltheir day job...^5",
+}
+local storyline2 = {
+    [0] = " ",
+    [1] = "^5oh hi again!^l^li forgot to mention^lsomething...^l^l",
+    [2] = "^5the pipes in each^lroom don't just require^la ^cscrewdriver^5.^l^lthey require ^dpliers^5 too^lif you want them^lproperly repaired.^l^loh look! a pair ^ljust materialized...",
+    [3] = "^5bigger tool,^l bigger challenge.^l^lbut i know you^lcan do it. good luck^lwith the repairs!^l^li promise i've told^lyou everything...",
+}
+local storyline3 = {
+    [0] = "",
+    [1] = "^5...i lied.^l",
+    [2] = "^5there's one final^ltool you need in^laddition to your^l^cscrewdriver^5 and ^dpliers^5:^l^la ^9hammer^5.",
+    [3] = "^5it's your strongest tool^lyet and surely all ^83^5^ltools can fix these^lpipes for good.^l^lhere's hoping!^l^li owe you one buddy.",
 }
 -- printc(text,x,y)
  -- by yellowafterlife (2015)
@@ -83,6 +95,7 @@ local debug_string=""
 local debug_string2=""
 local soln_string = ""
 local target_string = ""
+local debug_story = ""
 debug_print = function(DEBUG)
     if (DEBUG) then
         print(gstate)
@@ -113,12 +126,15 @@ handle_beginning_transitions = function()
     else if (gstate == "intro" or gstate == "intro_anim") then 
         intro_check()
     else 
-        animate_heater_cooler()
-        move_check()
-        jump_anim_check()
         move_anim_check()
-        curs_check()
-    end end 
+        if (gstate != "end") then 
+            mistake1_check() 
+            mistake2_check() 
+            animate_heater_cooler()
+            move_check()
+            jump_anim_check()
+            curs_check()
+    end end end
 end
 is_full_solution = function () 
     return is_solution_red() and is_solution_green() and curs.didrotate
@@ -157,8 +173,10 @@ function _update()
     elseif (gstate == "rotate") then
         rotate_animate()
     elseif (gstate == "move") then 
-
+    elseif (gstate == "mistake1") then 
     elseif (gstate == "move_anim") then 
+       
+
         --move_player()
         --pl_animtimer_incr()
         -- This is handled now in state trans
@@ -168,12 +186,24 @@ end
 
 function _draw()
     debug_print(config.DEBUG)
-    if (gstate == "title" or gstate == "title_anim") then
+    if (gstate == "end") then 
+        draw_end()
+    elseif (gstate == "title" or gstate == "title_anim") then
         cls(config.title_bgcolor)
         draw_title()
     else 
-        if (gstate == "intro" or gstate == "intro_anim") then 
+        if (gstate == "intro" or gstate == "intro_anim" 
+            or gstate == "mistake1" or gstate == "mistake1_anim"
+            or gstate == "mistake2" or gstate == "mistake2_anim") then 
             cls(config.title_bgcolor)
+            
+            --print('worm'..worm.story)
+            --if (worm.speech) print ('speech')
+            --print(gstate)
+            --print(intro_timer)
+            --print(debug_story)
+            --print(glevel)
+            --print(glevel_dynamic)
             draw_intro()
         else 
             cls(config.bgcolor)
@@ -196,6 +226,7 @@ function _draw()
                 --print(debug_string,0,20) 
             end 
             debug_string2 = ""
+            --print(gstate,0,20)
             if (gstate != "move") then
                 cursor(0,20)
                 print(debug_string)
@@ -238,6 +269,15 @@ draw_title = function()
         draw_player()
     end
 end
+draw_end = function() 
+    cls(1)
+    cursor(10,10)
+    color(6)
+    print("that's all of the game ")
+    print("right now. but i'll \nbe adding more levels\nand a proper \nending soon.\n\n\n")
+    print("thanks for playtesting! \140")
+    print("\n- matt")
+end 
 draw_intro = function() 
     map(gmap.intro.x,gmap.intro.y,0,0,16,16)
     draw_screwdriver()
@@ -248,8 +288,12 @@ draw_intro = function()
         print(intro_timer)
         print(worm.story)
     end
-    draw_speech()
-
+    if (gstate == "mistake1") then 
+        draw_speech(1)
+    elseif (gstate == "mistake2") then 
+        draw_speech(2)
+    else draw_speech(0)
+    end
 end
 
 draw_level = function()
@@ -294,7 +338,7 @@ draw_speech_helper = function(ul,br,xoff,yoff,pal_c)
         end
     end
 end
-draw_speech = function()
+draw_speech = function(mistake)
     -- bubble
     if (worm.speech) then 
         local ul = {x = 1,y=1}
@@ -303,7 +347,14 @@ draw_speech = function()
         draw_speech_helper(ul,br,0,0,false)
         -- story
         if (worm.story > 0) then 
-            local text = storyline[worm.story]
+            local text 
+            if (mistake == 0) then 
+                text = storyline[worm.story]
+            elseif (mistake == 1) then 
+                text = storyline2[worm.story]
+            elseif (mistake == 2) then
+                text = storyline3[worm.story] 
+            end
             printc(text,sub(text,1,worm.speech_frame),8*ul.x+6,8*ul.y+6)
             worm.speech_frame+=1
             if (worm.speech_frame < #text) then -- worm talking 
@@ -322,13 +373,22 @@ end
 draw_screwdriver = function()
     if (pl.x == 62) then 
         sfx(7)
-    elseif (btw(intro_timer,1430,2855)) then 
-        if (pl.x < 62) then 
-            spr(80,128/2-4,103)
-        else 
-            pl.screwdriver_anim+=.75
+    elseif (pl.x < 62) then 
+        pl.screwdriver_anim = 0
+        if (((gstate == "intro" or gstate == "intro_anim") and btw(intro_timer,1430,2960))
+            or ((gstate == "mistake1" or gstate == "mistake1_anim") and btw(intro_timer,680,1900))
+            or ((gstate == "mistake2" or gstate == "mistake2_anim") and btw(intro_timer,680,1900))) then 
+            if (curs.mode == 3) then 
+                spr(pl.tool_sprite[curs.mode],128/2-8,96,2,2)
+            else 
+                spr(pl.tool_sprite[curs.mode],128/2-4,96,1,2)
+            end
+        end
+    else
+        pl.screwdriver_anim+=.75
+        if (pl.screwdriver_anim < 12) then 
             circ(128/2,103+3,pl.screwdriver_anim,rnd(15))
-        end 
+        end
     end
 end
 draw_hammer = function()
@@ -336,14 +396,25 @@ draw_hammer = function()
     spr(gsprites.hammer_bubble, 50, 14)
 end
 draw_curs = function()
-    spr(gsprites.curs, curs.sx+(curs.mode-1)*4, curs.sy+(curs.mode-1)*4)
-    draw_curs_box(1,8*curs.mode)
+    local sprite, color
+    if (curs.mode == 1) then 
+        sprite = gsprites.curs1
+        color = 12
+    elseif (curs.mode == 2) then
+        sprite = gsprites.curs2
+        color = 13
+    elseif (curs.mode == 3) then 
+        sprite = gsprites.curs3
+        color = 9
+    end 
+    spr(sprite, curs.sx+(curs.mode-1)*4, curs.sy+(curs.mode-1)*4)
+    draw_curs_box(1,8*curs.mode,color)
 end
-draw_curs_box = function(n1, n2)
-    rectfill(curs.sx-n1, curs.sy-n1, curs.sx-n1, curs.sy+n2, curs.col)
-    rectfill(curs.sx-n1, curs.sy-n1, curs.sx+n2, curs.sy-n1, curs.col)
-    rectfill(curs.sx+n2, curs.sy+n2, curs.sx+n2, curs.sy-n1, curs.col)
-    rectfill(curs.sx+n2, curs.sy+n2, curs.sx-n1, curs.sy+n2, curs.col)
+draw_curs_box = function(n1, n2,color)
+    rectfill(curs.sx-n1, curs.sy-n1, curs.sx-n1, curs.sy+n2, color)
+    rectfill(curs.sx-n1, curs.sy-n1, curs.sx+n2, curs.sy-n1, color)
+    rectfill(curs.sx+n2, curs.sy+n2, curs.sx+n2, curs.sy-n1, color)
+    rectfill(curs.sx+n2, curs.sy+n2, curs.sx-n1, curs.sy+n2, color)
 end
 shadow_spr_below_with = function(sprn, col)
 end
@@ -415,7 +486,9 @@ config = {
     SHOW_SOLN = false,
     DEBUG_INTRO = false,
     SKIPTOLEVEL1 = false,
-    DEBUG_RESET = true
+    DEBUG_RESET = false,
+    DEBUG_2 = false,
+    SKIPTOEND = false
 }
 -- g means global
 gst = {
@@ -444,7 +517,9 @@ gsprites = {
     border = 112,
     hammer = 65,
     hammer_bubble = 113,
-    curs = 114,
+    curs1 = 219,
+    curs2 = 235,
+    curs3 = 251,
     floor1 = 06,
     speech_corner = 214,
     speech_edge_top = 230,
@@ -494,6 +569,11 @@ pl = {
     jump_yet = false,
     jump_count = 0,
     screwdriver_anim = 0,
+    tool_sprite = {
+        [1] = 64,
+        [2] = 67,
+        [3] = 65,   
+    }
 }
 worm = {
     x = 30, 
@@ -510,7 +590,9 @@ worm = {
     speech_shadow = 5,
     speech_frame = 0,
     continue = false, -- x button to continue listening
-    speech_intervals = {65,500,800,1400,1700,2300,2500,2800,2930}
+    speech_intervals = {65,500,800,1400,1700,2300,2500,2800,2930},
+    speech_intervals2 = {65,500,1300,1800,2050},
+    speech_intervals3 = {65,500,1300,1800,2050}
 }
 curs = {
 	sx = 80, -- pixel on screen
@@ -556,7 +638,9 @@ heater_cooler = {
 title_check = function()
     if (gstate == "title") then
         if (bnp('z') or bnp('x')) then
-            if (config.SKIPTOLEVEL1) then 
+            if (config.SKIPTOEND) then 
+                gstate = "end"
+            elseif (config.SKIPTOLEVEL1) then 
                 gstate = "intro_anim"
                 intro_timer = worm.speech_intervals[#worm.speech_intervals]-1
             else 
@@ -568,6 +652,116 @@ title_check = function()
         if ((bnp('z') or bnp('x')) or (pl.x > 130 and pl.x < 140)) then 
             gstate = "intro"
             pl.x = -10
+        end
+    end
+end
+mistake1_check = function() 
+    if (gstate == "move_anim") then 
+        intro_timer = 0
+        intro_timer_static = 0
+        worm.story = 0
+        worm.speech = false
+        worm.x = 30
+    else
+        intro_timer += 1
+        if (gstate == "mistake1") then 
+            intro_timer_static += 1
+            if (intro_timer_static < 28) then 
+                pl_update_walk(1)
+            end
+            if (btw(intro_timer_static,28,30)) then 
+                pl.frame = 'rest'
+                music(-1,500)
+            end
+            if (intro_timer > 30 or worm.story == 1) then 
+                -- Speech
+                worm.speech = true
+                worm_update_inch()
+                if (intro_timer == worm.speech_intervals2[worm.story+1]) then 
+                    worm.speech_frame = 0
+                    worm.story += 1
+                end 
+            end 
+            if (bnp('z') or bnp('x')) then
+                worm.story += 1 
+                worm.speech_frame = 0
+                intro_timer = worm.speech_intervals2[worm.story] 
+            end -- advance/continue dialogue
+            if (intro_timer == worm.speech_intervals2[#worm.speech_intervals2-1]) then 
+                worm.speech = false
+                gstate = "mistake1_anim"
+            end
+        elseif (gstate == "mistake1_anim") then --intro_anim
+            worm.x -= 1
+            worm_update_inch()
+            pl_update_walk(1)
+            if (intro_timer == worm.speech_intervals2[#worm.speech_intervals2]) then  
+                gstate = "move"
+                --glevel_dynamic = 1
+                --glevel = 1
+                pl.x = -10
+                play_bridge() -- for now
+                -- pipes
+                store_pipes()
+            end
+        end
+    end
+end
+mistake2_check = function() 
+    if (gstate == "move_anim") then 
+        intro_timer = 0
+        intro_timer_static = 0
+        worm.story = 0
+        worm.speech = false
+        worm.x = 30
+    else
+        intro_timer += 1
+        if (gstate == "mistake2") then 
+            intro_timer_static += 1
+            if (intro_timer_static < 28) then 
+                pl_update_walk(1)
+            end
+            if (btw(intro_timer_static,28,30)) then 
+                pl.frame = 'rest'
+                music(-1,500)
+            end
+            if (intro_timer > 30 or worm.story == 1) then 
+                -- Speech
+                worm.speech = true
+                worm_update_inch()
+                --debug_story = intro_timer
+                --if (debug_story > 65) then stop() end 
+                --if (intro_timer == worm.speech_intervals3[worm.story+1]) then 
+                --debug_story = worm.speech_intervals3[worm.story+1]..'interval'
+                -- It seems like intro_timer is skipping numbers somehow
+                if (btw(intro_timer,worm.speech_intervals3[worm.story+1],worm.speech_intervals3[worm.story+1]+2)) then
+                    worm.speech_frame = 0
+                    worm.story += 1
+                    --debug_story = 'story'..worm.story
+                end 
+            end 
+            if (bnp('z') or bnp('x')) then
+                worm.story += 1 
+                worm.speech_frame = 0
+                intro_timer = worm.speech_intervals3[worm.story] 
+            end -- advance/continue dialogue
+            if (intro_timer == worm.speech_intervals3[#worm.speech_intervals3-1]) then 
+                worm.speech = false
+                gstate = "mistake2_anim"
+            end
+        elseif (gstate == "mistake2_anim") then --intro_anim
+            worm.x -= 1
+            worm_update_inch()
+            pl_update_walk(1)
+            if (intro_timer == worm.speech_intervals3[#worm.speech_intervals3]) then  
+                gstate = "move"
+                --glevel_dynamic = 1
+                --glevel = 1
+                pl.x = -10
+                play_bridge() -- for now
+                -- pipes
+                store_pipes()
+            end
         end
     end
 end
@@ -645,6 +839,8 @@ move_check = function()
         else if (pl.x >= 20) and not is_full_solution() then 
             pl.frame = 'rest'
             gstate = "curs"
+            curs.bx = 3
+            curs.by = 4
         end end 
     end
     --if (pl.x > 48 and pl.x < 80 and btnp(5)) then
@@ -691,11 +887,21 @@ move_anim_check = function ()
                 glevel = flr(glevel_dynamic)
             end
             curs.mode = curs.mode % 3 + 1
-            gstate = "move"
+            if (glevel == 1) then 
+                if (curs.mode == 2) then 
+                    gstate = "mistake1"
+                elseif (curs.mode == 3) then 
+                    gstate = "mistake2"
+                end
+            elseif (gstate != "end") then 
+                gstate = "move"
+            end 
             pl.x = -10
             -- pipes
-            reset_pipes()
-            store_pipes()
+            if (gstate != "end") then 
+                reset_pipes()
+                store_pipes()
+            end
         end 
     end 
 end 
@@ -741,14 +947,18 @@ curs_on_pipe = function()
     return pipe_located
 end
 store_pipes = function()
-    for i=gst[glevel].corner.x,gst[glevel].corner.x + gst[glevel].width-1 do
-        original_pipes[i] = {}
-        for j=gst[glevel].corner.y,gst[glevel].corner.y + gst[glevel].height-1 do
-            local n = mget(i,j)
-            original_pipes[i][j] = n
-        end 
-    end
-end       
+    if (gst[glevel] == nil) then 
+        gstate = "end"
+    else 
+        for i=gst[glevel].corner.x,gst[glevel].corner.x + gst[glevel].width-1 do
+            original_pipes[i] = {}
+            for j=gst[glevel].corner.y,gst[glevel].corner.y + gst[glevel].height-1 do
+                local n = mget(i,j)
+                original_pipes[i][j] = n
+            end 
+        end
+    end     
+end  
 reset_pipes = function () 
     for i=gst[glevel].corner.x,gst[glevel].corner.x + gst[glevel].width-1 do
         for j=gst[glevel].corner.y,gst[glevel].corner.y + gst[glevel].height-1 do
@@ -1242,22 +1452,22 @@ bbb2888888882bbb888882bbbb28888888888888bb2882bb22292222229999221610000116100001
 33bb22222222bb332288823333288822222222223328823322292222222229221610000116100501000008800000800000888800080880808888080800808088
 003bb300003bb3000028820000288200003bb300002882002229222222922922101c0cc110105051000008000000800000000000888808800000000000808880
 003bb300003bb3000028820000288200003bb3000028820022222222229992220011111100111111000000000000000000000000800000000000000000000000
-00000000000000011100010000000000000000000000000000000000000000000000000000000000000000000000000000000000666666666666666666666666
-00000000000011166711171000000000000000000000000000000000000000000000000000000000000000000000000000000000699999666966666669999666
-00000000000166666616161000000000000000000000000000000000000000000000000000000000000000000000000000000000666966666966666669666666
-00000000001666666616161000000000000000000000000000000000000000000000000000000000000000000000000000000000666966666966666669666666
-00000000016666111111161000000000000000000000000000000000000000000000000000000000000000000000000000000000666966666966666669996666
-00000000016111199100010000000000000000000000000000000000000000000000000000000000000000000000000000000000666966666999996669666666
-00000000001000199100000000000000000000000000000000000000000000000000000000000000000000000000000000000000666966666666666669999966
-00000000000000199100000000000000000000000000000000000000000000000000000000000000000000000000000000000000666666666666666666666666
-0000009900000019910000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000cccccccc66666666
-0000099900000019910000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000cccccccc66696666
-0000999900000019910000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007000cccccccc66696666
-000999900000001991000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007a700cccccccc66696666
-0005900000000019910000000000000000000000000000000000000000000000000000000000000000000000000000000000000000337000cccccccc66696666
-0060000000000019910000000000000000000000000000000000000000000000000000000000000000000000000000000000000000300000cccccccc66696666
-0600000000000019910000000000000000000000000000000000000000000000000000000000000000000000000000000000000000330000cccccccc66666666
-6000000000000001100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000300000cccccccc66666666
+00000000000000111000100000600600000000000000000000000000000000000000000000000000000000000000000000000000666666666666666666666666
+00000000000111667111710006600660000000000000000000000000000000000000000000000000000000000000000000000000699999666966666669999666
+00000000001666666161610006600660000000000000000000000000000000000000000000000000000000000000000000000000666966666966666669666666
+00000000016666666161610000600600000000000000000000000000000000000000000000000000000000000000000000000000666966666966666669666666
+00000000166661111111610000a66a00000000000000000000000000000000000000000000000000000000000000000000000000666966666966666669996666
+0000000016111199100010000dd00dd0000000000000000000000000000000000000000000000000000000000000000000000000666966666999996669666666
+0000000001000199100000000dd00dd0000000000000000000000000000000000000000000000000000000000000000000000000666966666666666669999966
+0000000000000199100000000dd00dd0000000000000000000000000000000000000000000000000000000000000000000000000666666666666666666666666
+000000cc00000199100000000dd00dd000000000000000000000000000000000000000000000000000000000000000000000000000000000cccccccc66666666
+00000ccc00000199100000000dd00dd000000000000000000000000000000000000000000000000000000000000000000000000000000000cccccccc66696666
+0000cccc00000199100000000dd00dd000000000000000000000000000000000000000000000000000000000000000000000000000007000cccccccc66696666
+000cccc00000019910000000dd0000dd0000000000000000000000000000000000000000000000000000000000000000000000000007a700cccccccc66696666
+0005c0000000019910000000dd0000dd00000000000000000000000000000000000000000000000000000000000000000000000000337000cccccccc66696666
+006000000000019910000000dd0000dd00000000000000000000000000000000000000000000000000000000000000000000000000300000cccccccc66696666
+060000000000019910000000dd0000dd00000000000000000000000000000000000000000000000000000000000000000000000000330000cccccccc66666666
+600000000000001100000000dd0000dd00000000000000000000000000000000000000000000000000000000000000000000000000300000cccccccc66666666
 0000000000000000000000000099700000000000000000000000000000000000000000000000000000000000000000000000000044444444cccccccccccccccc
 0099700000997000009970000099990000000000000000000000000000000000000000000000000000000000000000000000000044444494cccccccccccccccc
 0099990000999900009999000000000000000000000000000000000000000000000000000000000000000000000000000000000044444444cccccccccccccccc
@@ -1315,28 +1525,28 @@ bbb2888888882bbb888882bbbb28888888888888bb2882bb22292222229999221610000116100001
 11111111111111111111111111111111111111110000000000000000000000001111111111111111000000000000000000000000000000000600000020202020
 00010000111111111111111111111111111111110000000000000000000000001111000000011111000000000000000000000000000006000000060000000000
 11111111001111100111000011111110011111111111111000000006000000000001000011111111111111110000000000000000000066006660066000000000
-111011110111111011110011001111111111111111111100000066670000000000010000000dddd0100888800000000000000000000666606060666600000000
-111111110111111111111111111111110011111111111111000677770000000011111111115dddd1112888810000000000000000000066006660066000060000
+111011110111111011110011001111111111111111111100000066670000000000010000000dddd0100888800c0000c000000000000666606060666600000000
+111111110111111111111111111111110011111111111111000677770000000011111111115dddd11128888100c00c0000000000000066006660066000060000
 111111111111111111111111011111110111111111111110006777770000000000000001115dddd1112888810000000000000000000006000000060000066000
 111111011111111111111111001111000011111111111111067777770000000000000001115dddd1112888110000000000000000000000000600000006666600
-111111111111111111111111011111000111111111111110067777770000000000000011115dd511111222110000000000000000000000066666000060066000
-11011111011111101011011101111110011111111111111006777777000000001111111111555511111122110000000000000000000000006660000060060060
+111111111111111111111111011111000111111111111110067777770000000000000011115dd5111112221100c00c0000000000000000066666000060066000
+11011111011111101011011101111110011111111111111006777777000000001111111111555511111122110c0000c000000000000000006660000060060060
 01111111001100001010000101111110111111111111111167777777000000000011000011115511111111110000000000000000000000000600000060000006
 111111110000000000000011000000000000000000000000666666660c0cc0000001000011111111000111110000000000000000066666000000000060000006
-11111111000000000000011111000000000000000000000077777777000000000011000011111111000111110000000000000000661616600007700006006006
-1111111100000001000001111110011000000000000000007777777700000000111111111111ee11111111110000000000000000666166600007700000066006
+11111111000000000000011111000000000000000000000077777777000000000011000011111111000111110d0000d000000000661616600007700006006006
+1111111100000001000001111110011000000000000000007777777700000000111111111111ee111111111100d00d0000000000666166600007700000066006
 11111111000000010000111111111110079000000079000077777777000000000000001111eeddd1111111110000000000000000661616600777777000666660
 1111111100000001000111111111111199900000099900007777777700000000000000011e2222dd111111110000000000000000066666000777777000066000
-1111111100000001000111111111111103300000003300007777777700000000000000014444422d111111110000000000000000000000000555555000006000
-1111111100011111001111111111111103300000003303337777777700000000111111114339999d111111110000000000000000000000000000000000000000
+1111111100000001000111111111111103300000003300007777777700000000000000014444422d1111111100d00d0000000000000000000555555000006000
+1111111100011111001111111111111103300000003303337777777700000000111111114339999d111111110d0000d000000000000000000000000000000000
 11111111000100000111111111111110003333330003330377777777000000000001000013333331111111110000000000000000000000000000000000000000
 22222222000000000111111111111111000000000001000177777776222222221145111100011111111100000000000000000000066660000000000006060600
-22222222000000001111111111111111000000000010001077777776222222221145111100011111111100000000000000000000661166000007700000000000
-22222222000000001111111111111100000000000000010077777776222222221141511111111111111111110000000000000000661666000007700000000000
+22222222000000001111111111111111000000000010001077777776222222221145111100011111111100000900009000000000661166000007700000000000
+22222222000000001111111111111100000000000000010077777776222222221141511111111111111111110090090000000000661666000007700000000000
 22222222000000001111111111111110000000000000000077777776222222221411511111111111111111110000000000000000661166000777777000000000
 22222222000000000111111111111110000000000000000077777776222222221411151111111111111111110000000000000000066660000777777000000000
-22222222000000000111111111111000000000000000000077777776222222221411151111111111111111110000000000000000000000000555555000000000
-22222222111100000011101111100000000100100000000077777776222222221dd1122111111111111111110000000000000000000000000000000000000000
+22222222000000000111111111111000000000000000000077777776222222221411151111111111111111110090090000000000000000000555555000000000
+22222222111100000011101111100000000100100000000077777776222222221dd1122111111111111111110900009000000000000000000000000000000000
 2222222200010000000000010000000000111011000000007777777622222222dddd222211111111111111110000000000000000000000000000000000000000
 __gff__
 000000000000000000000000000000000903060c0f0f050a0000000000000000903060c0f0f050a00000000000000000693c96c3a55a0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000010101
