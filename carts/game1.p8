@@ -58,6 +58,7 @@ function printc(text,t,x,y)
 -- gstate: move, curs, beginzoom, zoomin, zoomed, rotate, zoomout
 local gstate, glevel=0
 local glevel_dynamic=0
+local glevel_mode = 1
 local intro_timer = 0
 local intro_timer_static = 0
 local original_pipes = {}
@@ -518,7 +519,7 @@ curs = {
 	by = 5,
     mapx = 0, -- map block position of cursor
     mapy = 0, 
-	mode = 3, -- mode x mode grid
+	mode = 1, -- mode x mode grid
 	col = 6,
     zoomInDone = false,
     zoomOutDone = false,
@@ -689,6 +690,7 @@ move_anim_check = function ()
             else 
                 glevel = flr(glevel_dynamic)
             end
+            curs.mode = curs.mode % 3 + 1
             gstate = "move"
             pl.x = -10
             -- pipes
