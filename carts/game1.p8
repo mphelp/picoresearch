@@ -61,6 +61,7 @@ local glevel_dynamic=0
 local intro_timer = 0
 local intro_timer_static = 0
 local original_pipes = {}
+local BTN_C_HOLD = 0
 
 -- macros
 bnmap = {x=5, z=4, l=0, r=1, u=2, d=3 }
@@ -388,8 +389,11 @@ draw_header = function()
     print("finish\nreset",header_breaks[4]+3,2)
     spr(253,119,2)
     rectfill(114,9,125,11,gcolors.header_text)
-    rectfill(115,10,124,10,10)
-    rectfill(118,10,124,10,gcolors.header_shadow)
+    --rectfill(115,10,124,10,10)
+    rectfill(115,10,124,10,gcolors.header_shadow)
+    if (BTN_C_HOLD > 15) then 
+        rectfill(115,10,114+BTN_C_HOLD/10,10,10) -- RESET
+    end
 end
 print_shadow = function(text,x,y,color) 
     print(text,x+1,y,0)
@@ -693,9 +697,22 @@ move_anim_check = function ()
         end 
     end 
 end 
+btn_c_held = function() 
+    if (bn('z')) then 
+        BTN_C_HOLD+=1 
+        if (BTN_C_HOLD == 110) return true
+    else BTN_C_HOLD=0
+        return false
+    end
+end
 curs_check = function()
     if (gstate == "curs" and bnp('x') and curs_on_pipe()) then
         gstate = "beginzoom"
+    elseif(gstate == "curs" and btn_c_held()) then 
+        -- sound effect
+        -- reset
+        reset_pipes()
+        BTN_C_HOLD = 0
     elseif(gstate == "beginzoom") then
         gstate = "zoomin"
     elseif (gstate == "zoomin" and curs.zoomInDone) then
