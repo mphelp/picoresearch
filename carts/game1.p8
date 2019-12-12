@@ -754,6 +754,14 @@ reset_pipes = function ()
             mset(i,j,n)
         end 
     end
+    -- reset targets
+    if (gst[glevel].r.t != nil) then -- red target heater
+        mset(gst[glevel].r.t.x,gst[glevel].r.t.y, 57)
+    end 
+    if (gst[glevel].g.t != nil) then -- green target cooler
+        local i = flr(heater_cooler.c.i)
+        mset(gst[glevel].g.t.x,gst[glevel].g.t.y, 56)
+    end
 end
 
 -- Map modification with cells
