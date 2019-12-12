@@ -57,8 +57,10 @@ function printc(text,t,x,y)
 
 -- gstate: move, curs, beginzoom, zoomin, zoomed, rotate, zoomout
 local gstate, glevel=0
+local glevel_dynamic=0
 local intro_timer = 0
 local intro_timer_static = 0
+local original_pipes = {}
 
 -- macros
 bnmap = {x=5, z=4, l=0, r=1, u=2, d=3 }
@@ -128,7 +130,6 @@ handle_level_transitions = function()
             --soln_string = "VALID SOLUTION!" 
             play_solution()
             --music(16, 0, 12)
-            --glevel = glevel + 1
     end
 end
 handle_global_effects = function()
@@ -186,6 +187,11 @@ function _draw()
                 print(pl.animtimer,0,30)
                 print(debug_string2)
                 print(gstate)
+            end 
+            if (config.DEBUG_RESET) then 
+                --cursor(0,20)
+                --for key,value in pairs(original_pipes) do print(key..':'..value) end
+                --print(debug_string,0,20) 
             end 
             debug_string2 = ""
             if (gstate != "move") then
@@ -404,6 +410,7 @@ config = {
     SHOW_SOLN = false,
     DEBUG_INTRO = false,
     SKIPTOLEVEL1 = false,
+    DEBUG_RESET = true
 }
 -- g means global
 gst = {
@@ -595,10 +602,13 @@ intro_check = function()
         pl_update_walk(1)
         if (intro_timer == worm.speech_intervals[#worm.speech_intervals]) then  
             gstate = "move"
+            glevel_dynamic = 1
             glevel = 1
             pl.x = -10
             play_bridge() -- for now
             pl.x = -10
+            -- pipes
+            store_pipes()
         end
     end
 end
@@ -668,9 +678,18 @@ move_anim_check = function ()
     if (gstate == "move_anim") then 
         pl_update_walk(1)
         if (pl.x > 130) then 
-            glevel += 1
+            glevel_dynamic += 0.3334
+            if (glevel != flr(glevel_dynamic)) then 
+                glevel = flr(glevel_dynamic)
+                store_pipes() -- ONLY IF NEW LEVEL
+            else 
+                glevel = flr(glevel_dynamic)
+            end
             gstate = "move"
             pl.x = -10
+            -- pipes
+            reset_pipes()
+            store_pipes()
         end 
     end 
 end 
@@ -702,8 +721,23 @@ curs_on_pipe = function()
     end 
     return pipe_located
 end
-curs_in_bounds = function() 
-end 
+store_pipes = function()
+    for i=gst[glevel].corner.x,gst[glevel].corner.x + gst[glevel].width-1 do
+        original_pipes[i] = {}
+        for j=gst[glevel].corner.y,gst[glevel].corner.y + gst[glevel].height-1 do
+            local n = mget(i,j)
+            original_pipes[i][j] = n
+        end 
+    end
+end       
+reset_pipes = function () 
+    for i=gst[glevel].corner.x,gst[glevel].corner.x + gst[glevel].width-1 do
+        for j=gst[glevel].corner.y,gst[glevel].corner.y + gst[glevel].height-1 do
+            local n = original_pipes[i][j]
+            mset(i,j,n)
+        end 
+    end
+end
 
 -- Map modification with cells
 debug_str = ""

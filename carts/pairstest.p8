@@ -12,38 +12,26 @@ function _update()
 
 end
 
-function samepipes(p1, p2)
-	for k,v in pairs(p1) do 
-		if (p2[k] != v) then
-			return false
-		end
-	end
-	return true
-end
+
 -- compares only values
 -- does delete a seq almost entirely
-seq_equal = function(a,b)
-	
-	for c in all(a) do
-		print(c)
-		del(b,c)
-	end
-	print(#b)
-	return #b == 0
-end 
 
 function _draw()
 cls(2)
- local a = {b="c",c=3}
- local d = {b="x",c=4}
- local e = {}
- local f = {}
- add(e,a)
- add(e,d)
- add(f,a)
- add(f,d)
- 
- print(seq_equal({4},{4}))
+
+	local a = {}
+	a[1] = {}
+	a[2] = {}
+	a[1][2] = 3
+	a[1][3] = 5
+	a[2][5] = 8
+	for k,v in pairs(a) do 
+		print(k..":")
+		for k,value in pairs(v) do 
+			print(' '..k..':'..value)
+		end
+		print('\n')
+	end
 end
 
 
