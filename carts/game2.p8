@@ -26,6 +26,7 @@ function _draw()
     circ(30,20,1,10)
     circfill(20,30,2,10)
     circ(30,30,2,10)
+    print(debug_str)
 end
 
 
@@ -54,16 +55,19 @@ sh = {
 }
 ---- updates
 function move_ship()
-
-    if btn(0) then sh.x-=2 end
-    if btn(1) then sh.x+=2 end
-    if btn(2) then sh.y-=2 end
-    if btn(3) then sh.y+=2 end
-    if btn(4) then
+    local dx, dy
+    dx = {0,0}
+    dy = {0,0}
+    if btn(0) then sh.x+=2 dx = {dx[1]-1,dx[2]-3} dy = {dy[1]+1,dy[2]-1} end
+    if btn(1) then sh.x-=2 dx = {dx[1]+3,dx[2]+1} dy = {dy[1]+1,dy[2]-1} end
+    if btn(2) then sh.y+=2 dx = {dx[1]+1,dx[2]-1} dy = {dy[1]-1,dy[1]-3} end
+    if btn(3) then sh.y-=2 dx = {dx[1]+1,dx[2]-1} dy = {dy[1]+3,dy[2]+1} end
+    if btn(0) or btn(1) or btn(2) or btn(3) then
+        debug_str = dx[1] .. ' '.. dx[2] .. ',' .. dy[1] .. ' '..dy[2]
          --an example passing a table for the color (flames?)
          for i=1,10 do
              add_new_dust(sh.x,sh.y,
-                          rnd(1)-0.5,rnd(1)-2, -- dx, dy
+                          dx[1]-rnd(abs(dx[1]-dx[2])),dy[1]-rnd(abs(dy[1]-dy[2])), -- dx, dy
                           rnd(20)+10,rnd(1)+1, -- life, rad
                           0, 0.8, -- grav, perc
                           flame_sequence)
@@ -91,6 +95,9 @@ end
 
 -->8
 -- == ext helper func ==
+local debug_str = ''
+-- sign
+function sign(x) return x>0 and 1 or x<0 and -1 or 0 end
 -- CREDIT: DocRobs (https://www.lexaloffle.com/bbs/?pid=58211)
 --        _x coordinate of dust
 --        _y coordinate of dust
