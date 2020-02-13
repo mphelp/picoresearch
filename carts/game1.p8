@@ -489,7 +489,7 @@ config = {
 	bgcolor = 0,
     title_bgcolor = 0,
     DEBUG = false,
-    DEBUG_SOLN = true,
+    DEBUG_SOLN = false,
     SHOW_SOLN = false,
     DEBUG_INTRO = false,
     SKIPTOLEVEL = false,
@@ -1430,10 +1430,11 @@ end
 -- playtesters in order of appearance:
 -- tommy krug 2
 -- edward atkinson 9
--- jacob naatz ?
+-- jacob naatz 15
 -- chris enabnit 12
 -- jack bao 10
 -- njin 8
+-- ramzi 3/11
 
 -->8
 -- page (8) MUSIC
